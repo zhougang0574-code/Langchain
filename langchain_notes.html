@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangChain 学习笔记</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 17px;
+    display: flex;
+    background: #f5f7fa;
+    color: #2c3e50;
+  }
+
+  /* ── 侧边栏 ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    height: 100vh;
+    overflow-y: auto;
+    background: #1e2a3a;
+    color: #cdd6e0;
+    position: sticky;
+    top: 0;
+    padding: 20px 0 40px;
+  }
+  #sidebar h1 {
+    font-size: 15px;
+    padding: 0 18px 16px;
+    color: #7ecfff;
+    border-bottom: 1px solid #2e3f52;
+    letter-spacing: 1px;
+  }
+  .nav-lesson {
+    padding: 10px 18px 10px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #a8bfd0;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .nav-lesson:hover { background: #263545; color: #fff; }
+  .nav-lesson.active { color: #7ecfff; background: #263545; }
+  .nav-arrow {
+    display: inline-block;
+    transition: transform 0.25s;
+    font-size: 11px;
+  }
+  .nav-lesson.open .nav-arrow { transform: rotate(90deg); }
+  .nav-sub {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .nav-lesson.open + .nav-sub { max-height: 400px; }
+  .nav-sub a {
+    display: block;
+    padding: 6px 18px 6px 36px;
+    font-size: 13px;
+    color: #7a96aa;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .nav-sub a:hover { color: #b8d4e8; }
+
+  /* ── 正文 ── */
+  #content {
+    flex: 1;
+    padding: 0 0 80px;
+    overflow-y: auto;
+  }
+
+  /* ── 课程 banner ── */
+  .lesson-banner {
+    padding: 28px 48px 22px;
+    color: #fff;
+  }
+  .lesson-banner h2 { font-size: 22px; margin-bottom: 6px; }
+  .lesson-banner p  { font-size: 14px; opacity: 0.85; }
+
+  /* 每课颜色 */
+  .banner-01 { background: linear-gradient(135deg, #2980b9, #1abc9c); }
+  .banner-02 { background: linear-gradient(135deg, #8e44ad, #3498db); }
+  .banner-03 { background: linear-gradient(135deg, #e67e22, #e74c3c); }
+  .banner-04 { background: linear-gradient(135deg, #16a085, #27ae60); }
+  .banner-05 { background: linear-gradient(135deg, #c0392b, #e91e63); }
+  .banner-06 { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
+  .banner-07 { background: linear-gradient(135deg, #f39c12, #d35400); }
+  .banner-08 { background: linear-gradient(135deg, #6c3483, #1a5276); }
+
+  /* ── 内容区块 ── */
+  .lesson-body { padding: 32px 48px; }
+
+  .section { margin-bottom: 36px; }
+  .section h3 {
+    font-size: 17px;
+    color: #1a6fa8;
+    margin-bottom: 14px;
+    border-left: 4px solid #1a6fa8;
+    padding-left: 10px;
+  }
+  .section p { line-height: 1.8; margin-bottom: 10px; }
+
+  /* ── 代码块 ── */
+  pre {
+    background: #1e2a3a;
+    color: #cdd6e0;
+    border-radius: 8px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.7;
+    font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  }
+  .kw  { color: #c792ea; }   /* keyword */
+  .fn  { color: #82aaff; }   /* function/class */
+  .st  { color: #c3e88d; }   /* string */
+  .cm  { color: #546e7a; font-style: italic; } /* comment */
+  .nm  { color: #ffcb6b; }   /* number/const */
+  .tp  { color: #f78c6c; }   /* type */
+  .op  { color: #89ddff; }   /* operator / punctuation */
+
+  /* ── 流程图 ── */
+  .flowchart {
+    background: #f0f4f8;
+    border: 1px solid #d0dce8;
+    border-radius: 8px;
+    padding: 20px 28px;
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 13.5px;
+    line-height: 1.9;
+    white-space: pre;
+    overflow-x: auto;
+    color: #2c3e50;
+  }
+
+  /* ── 知识点格子 ── */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+  }
+  .tip-card {
+    background: #fff;
+    border-radius: 8px;
+    border-left: 4px solid #2980b9;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .tip-card .star { color: #f39c12; font-size: 15px; margin-right: 4px; }
+
+  /* ── API 速查表 ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  th {
+    background: #2980b9;
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid #e0e8f0; }
+  tr:nth-child(even) td { background: #f7fafd; }
+  tr:hover td { background: #edf3fa; }
+
+  /* ── 分割线 ── */
+  .lesson-divider {
+    height: 1px;
+    background: #d0dce8;
+    margin: 0 48px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- 侧边栏 -->
+<nav id="sidebar">
+  <h1>📚 LangChain 笔记</h1>
+
+  <!-- 第1课 nav -->
+  <div class="nav-lesson" data-target="lesson-01">
+    <span class="nav-arrow">▶</span> 第1课 · LLM 基础调用
+  </div>
+  <div class="nav-sub">
+    <a href="#l01-concept">概念：LLM & Messages</a>
+    <a href="#l01-invoke">四种调用方式</a>
+    <a href="#l01-flow">执行流程图</a>
+    <a href="#l01-tips">核心知识点</a>
+    <a href="#l01-api">API 速查</a>
+  </div>
+
+  <!-- 第2课 nav -->
+  <div class="nav-lesson" data-target="lesson-02">
+    <span class="nav-arrow">▶</span> 第2课 · Prompt Template
+  </div>
+  <div class="nav-sub">
+    <a href="#l02-concept">概念：为什么需要模板</a>
+    <a href="#l02-code">核心用法</a>
+    <a href="#l02-flow">执行流程图</a>
+    <a href="#l02-tips">核心知识点</a>
+    <a href="#l02-api">API 速查</a>
+  </div>
+
+  <!-- 第3课 nav -->
+  <div class="nav-lesson" data-target="lesson-03">
+    <span class="nav-arrow">▶</span> 第3课 · LCEL 链式调用
+  </div>
+  <div class="nav-sub">
+    <a href="#l03-concept">概念：| 管道的本质</a>
+    <a href="#l03-code">Runnable 家族用法</a>
+    <a href="#l03-flow">执行流程图</a>
+    <a href="#l03-tips">核心知识点</a>
+    <a href="#l03-api">API 速查</a>
+  </div>
+
+  <!-- 第4课 nav -->
+  <div class="nav-lesson" data-target="lesson-04">
+    <span class="nav-arrow">▶</span> 第4课 · 输出解析器
+  </div>
+  <div class="nav-sub">
+    <a href="#l04-concept">概念：三种解析器</a>
+    <a href="#l04-code">核心用法</a>
+    <a href="#l04-flow">执行流程图</a>
+    <a href="#l04-tips">核心知识点</a>
+    <a href="#l04-api">API 速查</a>
+  </div>
+
+  <!-- 第5课 nav -->
+  <div class="nav-lesson" data-target="lesson-05">
+    <span class="nav-arrow">▶</span> 第5课 · Memory 对话历史
+  </div>
+  <div class="nav-sub">
+    <a href="#l05-concept">概念：记忆管理</a>
+    <a href="#l05-code">核心用法</a>
+    <a href="#l05-flow">执行流程图</a>
+    <a href="#l05-tips">核心知识点</a>
+    <a href="#l05-api">API 速查</a>
+  </div>
+
+  <!-- 第6课 nav -->
+  <div class="nav-lesson" data-target="lesson-06">
+    <span class="nav-arrow">▶</span> 第6课 · Tools &amp; Agent
+  </div>
+  <div class="nav-sub">
+    <a href="#l06-concept">概念：Agent 执行循环</a>
+    <a href="#l06-code">核心用法</a>
+    <a href="#l06-flow">执行流程图</a>
+    <a href="#l06-tips">核心知识点</a>
+    <a href="#l06-api">API 速查</a>
+  </div>
+
+  <!-- 第7课 nav -->
+  <div class="nav-lesson" data-target="lesson-07">
+    <span class="nav-arrow">▶</span> 第7课 · RAG 基础
+  </div>
+  <div class="nav-sub">
+    <a href="#l07-concept">概念：RAG 解决什么</a>
+    <a href="#l07-code">核心用法</a>
+    <a href="#l07-flow">执行流程图</a>
+    <a href="#l07-tips">核心知识点</a>
+    <a href="#l07-api">API 速查</a>
+  </div>
+
+  <!-- 第8课 nav -->
+  <div class="nav-lesson" data-target="lesson-08">
+    <span class="nav-arrow">▶</span> 第8课 · RAG 进阶
+  </div>
+  <div class="nav-sub">
+    <a href="#l08-concept">对话式 RAG</a>
+    <a href="#l08-code">MultiQuery & MMR</a>
+    <a href="#l08-flow">执行流程图</a>
+    <a href="#l08-tips">核心知识点</a>
+    <a href="#l08-api">API 速查</a>
+  </div>
+
+</nav>
+
+<!-- 正文 -->
+<main id="content">
+
+  <!-- ════════════════════════════════ 第1课 ════════════════════════════════ -->
+  <section id="lesson-01">
+    <div class="lesson-banner banner-01">
+      <h2>第 1 课 · LLM 基础调用 &amp; Messages 消息类型</h2>
+      <p>文件：01_llm_basics.py &nbsp;｜&nbsp; 核心：ChatOpenAI · invoke · stream · batch · ainvoke · StrOutputParser</p>
+    </div>
+
+    <div class="lesson-body">
+
+      <!-- 概念说明 -->
+      <div class="section" id="l01-concept">
+        <h3>概念：为什么要有消息类型？</h3>
+        <p>传统 LLM API 只接受字符串。Chat 模型本质上是多轮对话，需要区分<strong>谁在说话</strong>。LangChain 用三种消息对象统一表达对话历史：</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#2980b9;">
+            <strong>SystemMessage</strong><br>
+            设定模型角色、行为规则。只在对话开头出现一次（或每次都传）。
+          </div>
+          <div class="tip-card" style="border-color:#27ae60;">
+            <strong>HumanMessage</strong><br>
+            用户的输入。每轮对话中用户说的话。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <strong>AIMessage</strong><br>
+            模型的回复。用于构造多轮对话历史，不是当前请求本身。
+          </div>
+        </div>
+      </div>
+
+      <!-- 四种调用方式 -->
+      <div class="section" id="l01-invoke">
+        <h3>四种调用方式</h3>
+        <p>所有 LangChain 组件都实现了 <strong>Runnable 接口</strong>，统一支持以下四种调用：</p>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_openai</span> <span class="kw">import</span> <span class="fn">ChatOpenAI</span>
+<span class="kw">from</span> <span class="tp">langchain_core.messages</span> <span class="kw">import</span> <span class="fn">SystemMessage</span>, <span class="fn">HumanMessage</span>
+<span class="kw">from</span> <span class="tp">langchain_core.output_parsers</span> <span class="kw">import</span> <span class="fn">StrOutputParser</span>
+
+llm = <span class="fn">ChatOpenAI</span>(
+    api_key=os.<span class="fn">getenv</span>(<span class="st">"API_KEY"</span>),
+    base_url=os.<span class="fn">getenv</span>(<span class="st">"BASE_URL"</span>),
+    model=os.<span class="fn">getenv</span>(<span class="st">"MODEL"</span>),
+    temperature=<span class="nm">0.7</span>,
+)
+
+messages = [
+    <span class="fn">SystemMessage</span>(content=<span class="st">"你是一个简洁的助手，每次回复不超过两句话。"</span>),
+    <span class="fn">HumanMessage</span>(content=<span class="st">"什么是 LangChain？"</span>),
+]
+
+<span class="cm"># 1. invoke —— 同步，等完整响应</span>
+response = llm.<span class="fn">invoke</span>(messages)        <span class="cm"># 返回 AIMessage</span>
+print(response.content)               <span class="cm"># .content 才是字符串</span>
+
+<span class="cm"># 2. stream —— 流式，逐 chunk 打印</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> llm.<span class="fn">stream</span>(messages):
+    print(chunk.content, end=<span class="st">""</span>, flush=<span class="nm">True</span>)
+
+<span class="cm"># 3. batch —— 批量并发</span>
+responses = llm.<span class="fn">batch</span>([
+    [<span class="fn">HumanMessage</span>(content=<span class="st">"1+1=?"</span>)],
+    [<span class="fn">HumanMessage</span>(content=<span class="st">"Python 是什么？"</span>)],
+])
+
+<span class="cm"># 4. ainvoke —— 异步（用于 FastAPI 等 async 环境）</span>
+response = <span class="kw">await</span> llm.<span class="fn">ainvoke</span>(messages)
+
+<span class="cm"># StrOutputParser：从 AIMessage 提取纯文本</span>
+<span class="cm"># 这是 LCEL 链的写法：llm | parser</span>
+chain = llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+text = chain.<span class="fn">invoke</span>(messages)          <span class="cm"># 直接返回 str</span>
+</pre>
+      </div>
+
+      <!-- 流程图 -->
+      <div class="section" id="l01-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">用户输入 (str / Message)
+        │
+        ▼
+  [messages 列表]
+  SystemMessage("角色设定")
+  HumanMessage("用户问题")
+        │
+        ├─── invoke()   ──→  等待完整响应  ──→  AIMessage
+        ├─── stream()   ──→  逐 chunk 返回 ──→  AIMessage(片段) × N
+        ├─── batch()    ──→  并发多路请求  ──→  [AIMessage, ...]
+        └─── ainvoke()  ──→  异步等待      ──→  AIMessage
+                                  │
+                                  ▼
+                          StrOutputParser
+                                  │
+                                  ▼
+                             str (纯文本)</div>
+      </div>
+
+      <!-- 知识点格子 -->
+      <div class="section" id="l01-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <span class="star">★</span><strong>Runnable 接口</strong><br>
+            ChatOpenAI 实现了 Runnable，所以天然支持 invoke / stream / batch / ainvoke 四种调用，这是 LCEL 的基础。
+          </div>
+          <div class="tip-card">
+            <span class="star">★</span><strong>invoke 返回 AIMessage</strong><br>
+            不是字符串！要取文本需要 <code>.content</code>，或者接 StrOutputParser。
+          </div>
+          <div class="tip-card">
+            <span class="star">★</span><strong>stream vs invoke</strong><br>
+            stream 适合前端打字机效果；invoke 适合后端拿完整结果再处理。
+          </div>
+          <div class="tip-card">
+            <span class="star">★</span><strong>batch 并发</strong><br>
+            内部并发执行，比 for 循环 invoke 快得多。适合批量翻译、分类任务。
+          </div>
+          <div class="tip-card">
+            <span class="star">★</span><strong>temperature</strong><br>
+            0 = 最确定（适合代码/JSON）；0.7~1 = 更有创意（适合文案）。
+          </div>
+          <div class="tip-card">
+            <span class="star">★</span><strong>usage_metadata</strong><br>
+            AIMessage.usage_metadata 记录 input/output token 数，调试成本时用。
+          </div>
+        </div>
+      </div>
+
+      <!-- API 速查表 -->
+      <div class="section" id="l01-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>方法</th><th>返回类型</th><th>适用场景</th><th>是否阻塞</th></tr>
+          <tr><td><code>llm.invoke(messages)</code></td><td>AIMessage</td><td>同步单次调用</td><td>是</td></tr>
+          <tr><td><code>llm.stream(messages)</code></td><td>Iterator[AIMessage]</td><td>流式输出 / 打字机</td><td>是（逐步）</td></tr>
+          <tr><td><code>llm.batch([msgs1, msgs2])</code></td><td>List[AIMessage]</td><td>批量并发请求</td><td>是</td></tr>
+          <tr><td><code>await llm.ainvoke(messages)</code></td><td>AIMessage</td><td>async 环境</td><td>否</td></tr>
+          <tr><td><code>llm | StrOutputParser()</code></td><td>Runnable → str</td><td>LCEL 链，直接拿文本</td><td>取决于调用方式</td></tr>
+          <tr><td><code>SystemMessage(content=...)</code></td><td>SystemMessage</td><td>设定角色/规则</td><td>—</td></tr>
+          <tr><td><code>HumanMessage(content=...)</code></td><td>HumanMessage</td><td>用户输入</td><td>—</td></tr>
+          <tr><td><code>AIMessage(content=...)</code></td><td>AIMessage</td><td>构造历史对话</td><td>—</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+  <!-- ════════════════════════ /第1课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第2课 ════════════════════════════════ -->
+  <section id="lesson-02">
+    <div class="lesson-banner banner-02">
+      <h2>第 2 课 · Prompt Template 提示词模板</h2>
+      <p>文件：02_prompt_template.py &nbsp;｜&nbsp; 核心：ChatPromptTemplate · partial · MessagesPlaceholder · LCEL 链路</p>
+    </div>
+
+    <div class="lesson-body">
+
+      <!-- 概念说明 -->
+      <div class="section" id="l02-concept">
+        <h3>概念：为什么需要模板？</h3>
+        <p>直接拼字符串构造 Prompt 有两个问题：<strong>复用性差</strong>（换个问题就要重写）和<strong>变量管理混乱</strong>（f-string 散落各处）。ChatPromptTemplate 把结构和变量分离，让 Prompt 像函数一样可复用、可组合。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <strong>from_messages()</strong><br>
+            主流写法，支持多角色消息列表。元组 <code>("role", "content")</code> 是简写。
+          </div>
+          <div class="tip-card" style="border-color:#3498db;">
+            <strong>from_template()</strong><br>
+            只有一条 Human 消息的简化写法，适合无需 System 的简单场景。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <strong>MessagesPlaceholder</strong><br>
+            在模板中留"插槽"，运行时动态插入完整消息列表（对话历史的关键）。
+          </div>
+          <div class="tip-card" style="border-color:#27ae60;">
+            <strong>partial()</strong><br>
+            预绑定部分变量，返回新模板。原模板不变（immutable 设计）。
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心用法代码 -->
+      <div class="section" id="l02-code">
+        <h3>核心用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_core.prompts</span> <span class="kw">import</span> (
+    <span class="fn">ChatPromptTemplate</span>,
+    <span class="fn">MessagesPlaceholder</span>,
+)
+<span class="kw">from</span> <span class="tp">langchain_core.messages</span> <span class="kw">import</span> <span class="fn">HumanMessage</span>, <span class="fn">AIMessage</span>
+
+<span class="cm"># ── 1. 基础：from_messages ──</span>
+template = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="st">"system"</span>, <span class="st">"你是一个专精 {domain} 的专家，回答要简洁专业。"</span>),
+    (<span class="st">"human"</span>, <span class="st">"请解释一下：{concept}"</span>),
+])
+
+<span class="cm"># format_messages：只格式化，不调用 LLM → 返回消息列表</span>
+messages = template.<span class="fn">format_messages</span>(domain=<span class="st">"Python"</span>, concept=<span class="st">"GIL"</span>)
+
+<span class="cm"># LCEL 链路：template | llm | parser</span>
+chain = template <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+result = chain.<span class="fn">invoke</span>({<span class="st">"domain"</span>: <span class="st">"网络安全"</span>, <span class="st">"concept"</span>: <span class="st">"SQL 注入"</span>})
+
+
+<span class="cm"># ── 2. partial：预绑定 domain，只暴露 concept ──</span>
+expert_template = template.<span class="fn">partial</span>(domain=<span class="st">"机器学习"</span>)
+result = (expert_template <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()).<span class="fn">invoke</span>({<span class="st">"concept"</span>: <span class="st">"过拟合"</span>})
+
+
+<span class="cm"># ── 3. MessagesPlaceholder：多轮对话 ──</span>
+chat_template = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="st">"system"</span>, <span class="st">"你是一个友好的助手。"</span>),
+    <span class="fn">MessagesPlaceholder</span>(variable_name=<span class="st">"history"</span>),  <span class="cm"># 历史插槽</span>
+    (<span class="st">"human"</span>, <span class="st">"{input}"</span>),
+])
+
+history = [
+    <span class="fn">HumanMessage</span>(content=<span class="st">"我叫小明"</span>),
+    <span class="fn">AIMessage</span>(content=<span class="st">"你好，小明！"</span>),
+]
+result = (chat_template <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()).<span class="fn">invoke</span>({
+    <span class="st">"history"</span>: history,
+    <span class="st">"input"</span>: <span class="st">"你还记得我叫什么吗？"</span>,
+})
+
+
+<span class="cm"># ── 4. 调试：查看模板还缺哪些变量 ──</span>
+print(template.input_variables)       <span class="cm"># ['concept', 'domain']</span>
+print(chat_template.input_variables)  <span class="cm"># ['history', 'input']</span>
+</pre>
+      </div>
+
+      <!-- 流程图 -->
+      <div class="section" id="l02-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">ChatPromptTemplate.from_messages([...占位变量...])
+              │
+              │ .partial(domain="机器学习")   ← 预绑定，返回新模板
+              ▼
+   局部绑定模板（只剩 concept 变量）
+              │
+              │  LCEL: template | llm | StrOutputParser()
+              ▼
+   invoke({"concept": "过拟合", "history": [...], "input": "..."})
+              │
+              │ template 填充变量
+              ▼
+  [SystemMessage]
+  [HumanMessage]  ← 普通消息
+  [HumanMessage]  ← MessagesPlaceholder 展开历史
+  [AIMessage  ]
+  [HumanMessage]  ← 当前 input
+              │
+              │ llm 推理
+              ▼
+          AIMessage
+              │
+              │ StrOutputParser
+              ▼
+           str（最终文本）</div>
+      </div>
+
+      <!-- 知识点格子 -->
+      <div class="section" id="l02-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>元组简写</strong><br>
+            <code>("system", "...")</code> 等价于 <code>SystemMessagePromptTemplate.from_template("...")</code>，日常用元组就够。
+          </div>
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>format_messages vs invoke</strong><br>
+            <code>format_messages()</code> 只格式化返回消息列表；在 LCEL 链中 <code>invoke()</code> 才会驱动整条链执行。
+          </div>
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>partial() 不可变</strong><br>
+            返回新模板，原模板不变。可以基于同一个模板 partial 出多个专用模板。
+          </div>
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>MessagesPlaceholder 是多轮对话的核心</strong><br>
+            第5课 Memory 底层就是靠它把历史消息列表插入模板。没有它就无法做上下文管理。
+          </div>
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>input_variables 调试</strong><br>
+            <code>template.input_variables</code> 列出所有未填充的变量，invoke 前少传任何一个都会报错。
+          </div>
+          <div class="tip-card" style="border-color:#8e44ad;">
+            <span class="star">★</span><strong>ChatPromptTemplate 也是 Runnable</strong><br>
+            所以支持 <code>|</code> 管道，可以直接接 llm，不需要手动调用 format_messages。
+          </div>
+        </div>
+      </div>
+
+      <!-- API 速查表 -->
+      <div class="section" id="l02-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th><th>返回类型</th></tr>
+          <tr><td><code>ChatPromptTemplate.from_messages([...])</code></td><td>从消息列表创建模板（主流方式）</td><td>ChatPromptTemplate</td></tr>
+          <tr><td><code>ChatPromptTemplate.from_template("...")</code></td><td>单条 Human 消息的简化创建</td><td>ChatPromptTemplate</td></tr>
+          <tr><td><code>template.format_messages(**kwargs)</code></td><td>只格式化，不调用 LLM</td><td>List[BaseMessage]</td></tr>
+          <tr><td><code>template.partial(**kwargs)</code></td><td>预绑定部分变量，返回新模板</td><td>ChatPromptTemplate</td></tr>
+          <tr><td><code>template.input_variables</code></td><td>列出所有未填充的变量名</td><td>List[str]</td></tr>
+          <tr><td><code>MessagesPlaceholder(variable_name="x")</code></td><td>消息列表插槽，运行时展开</td><td>MessagesPlaceholder</td></tr>
+          <tr><td><code>template | llm | parser</code></td><td>LCEL 完整链路</td><td>Runnable</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+  <!-- ════════════════════════ /第2课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第3课 ════════════════════════════════ -->
+  <section id="lesson-03">
+    <div class="lesson-banner banner-03">
+      <h2>第 3 课 · LCEL 链式调用（LangChain Expression Language）</h2>
+      <p>文件：03_lcel.py &nbsp;｜&nbsp; 核心：| 管道 · RunnablePassthrough · RunnableParallel · RunnableLambda · .bind()</p>
+    </div>
+
+    <div class="lesson-body">
+
+      <!-- 概念 -->
+      <div class="section" id="l03-concept">
+        <h3>概念：| 管道的本质</h3>
+        <p><code>a | b</code> 在 Python 里触发 <code>__or__</code>，LangChain 的 Runnable 重写了它，返回一个 <strong>RunnableSequence</strong>。序列中每一步的输出自动作为下一步的输入。整条链天然继承 Runnable 接口，支持 invoke / stream / batch / ainvoke。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#e67e22;">
+            <strong>RunnableSequence</strong><br>
+            <code>a | b | c</code> 的产物，顺序执行，前一步输出 = 后一步输入。
+          </div>
+          <div class="tip-card" style="border-color:#e74c3c;">
+            <strong>RunnableParallel</strong><br>
+            多路并发执行，各分支共享同一输入，结果合并为 dict。
+          </div>
+          <div class="tip-card" style="border-color:#c0392b;">
+            <strong>RunnablePassthrough</strong><br>
+            原样透传输入。常和 Parallel 配合，保留原始值同时添加新字段。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <strong>RunnableLambda</strong><br>
+            把任意 Python 函数包装成 Runnable，随时插入链中。
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心用法 -->
+      <div class="section" id="l03-code">
+        <h3>Runnable 家族用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_core.runnables</span> <span class="kw">import</span> (
+    <span class="fn">RunnablePassthrough</span>, <span class="fn">RunnableParallel</span>, <span class="fn">RunnableLambda</span>
+)
+<span class="kw">from</span> <span class="tp">operator</span> <span class="kw">import</span> <span class="fn">itemgetter</span>
+
+<span class="cm"># ── 1. | 管道 ──</span>
+chain = prompt <span class="op">|</span> llm <span class="op">|</span> parser
+print(type(chain).__name__)   <span class="cm"># RunnableSequence</span>
+
+<span class="cm"># ── 2. RunnablePassthrough：原样透传 ──</span>
+<span class="cm"># 常见于 RAG：保留 question，同时并行检索 context</span>
+rag_input = <span class="fn">RunnableParallel</span>({
+    <span class="st">"question"</span>: <span class="fn">RunnablePassthrough</span>(),
+    <span class="st">"context"</span>: <span class="fn">RunnableLambda</span>(<span class="kw">lambda</span> q: retrieve(q)),
+})
+result = rag_input.<span class="fn">invoke</span>(<span class="st">"什么是向量数据库"</span>)
+<span class="cm"># → {"question": "...", "context": "..."}</span>
+
+<span class="cm"># ── 3. assign()：在原 dict 上追加字段 ──</span>
+<span class="cm"># 与 RunnableParallel 的关键区别：原有 key 全部保留</span>
+chain = <span class="fn">RunnablePassthrough</span>.<span class="fn">assign</span>(
+    upper=<span class="kw">lambda</span> x: x[<span class="st">"text"</span>].upper(),
+    length=<span class="kw">lambda</span> x: len(x[<span class="st">"text"</span>]),
+)
+chain.<span class="fn">invoke</span>({<span class="st">"text"</span>: <span class="st">"hello"</span>})
+<span class="cm"># → {"text": "hello", "upper": "HELLO", "length": 5}</span>
+
+<span class="cm"># ── 4. RunnableParallel：并发两路 LLM ──</span>
+parallel = <span class="fn">RunnableParallel</span>({
+    <span class="st">"pros"</span>: prompt_pros <span class="op">|</span> llm <span class="op">|</span> parser,
+    <span class="st">"cons"</span>: prompt_cons <span class="op">|</span> llm <span class="op">|</span> parser,
+})
+result = parallel.<span class="fn">invoke</span>({<span class="st">"thing"</span>: <span class="st">"远程工作"</span>})
+<span class="cm"># → {"pros": "...", "cons": "..."}</span>
+
+<span class="cm"># ── 5. RunnableLambda：插入自定义函数 ──</span>
+chain = prompt <span class="op">|</span> llm <span class="op">|</span> parser <span class="op">|</span> <span class="fn">RunnableLambda</span>(<span class="kw">lambda</span> s: s + <span class="st">" 🤖"</span>)
+
+<span class="cm"># ── 6. itemgetter：从 dict 提取单个字段 ──</span>
+<span class="cm"># 比 lambda x: x["key"] 更简洁</span>
+chain = (
+    <span class="fn">RunnablePassthrough</span>.<span class="fn">assign</span>(upper=<span class="kw">lambda</span> x: x[<span class="st">"text"</span>].upper())
+    <span class="op">|</span> <span class="fn">itemgetter</span>(<span class="st">"upper"</span>)
+    <span class="op">|</span> <span class="fn">RunnableLambda</span>(<span class="kw">lambda</span> s: <span class="st">f"提取到: {s}"</span>)
+)
+
+<span class="cm"># ── 7. .bind()：预绑定参数 ──</span>
+<span class="cm"># 遇到"。"就停止，控制输出长度</span>
+bound_chain = prompt <span class="op">|</span> llm.<span class="fn">bind</span>(stop=[<span class="st">"。"</span>]) <span class="op">|</span> parser
+<span class="cm"># 输出不含"。"，在首个句号前截断</span>
+</pre>
+      </div>
+
+      <!-- 流程图 -->
+      <div class="section" id="l03-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">─── RunnableSequence（| 链）───────────────────────────
+  输入
+   │
+   ▼ step1: ChatPromptTemplate → PromptValue
+   ▼ step2: ChatOpenAI         → AIMessage
+   ▼ step3: StrOutputParser    → str
+   │
+  输出
+
+─── RunnableParallel ────────────────────────────────
+            输入 dict
+           /          \
+    branch "pros"   branch "cons"    ← 并发执行
+           \          /
+        合并为新 dict
+    {"pros": "...", "cons": "..."}
+
+─── RunnablePassthrough.assign ─────────────────────
+  输入: {"text": "hello"}
+   │
+   ├── 保留原有 key: text="hello"
+   ├── 追加 upper="HELLO"
+   └── 追加 length=5
+   │
+  输出: {"text":"hello","upper":"HELLO","length":5}</div>
+      </div>
+
+      <!-- 知识点 -->
+      <div class="section" id="l03-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>| 创建 RunnableSequence</strong><br>
+            <code>a | b</code> 触发 Runnable.__or__，不是 Python 位运算，返回 RunnableSequence 对象。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>assign vs RunnableParallel</strong><br>
+            assign 在原 dict 基础上追加；Parallel 完全重构 dict，原有 key 需要显式保留。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>RAG 标准写法</strong><br>
+            <code>{"question": RunnablePassthrough(), "context": retriever}</code> 是 RAG 链的标准起手式。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>RunnableLambda 注意事项</strong><br>
+            async 函数可以直接传入，LCEL 会自动识别并在 ainvoke 时用 await 调用。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>itemgetter 优于 lambda</strong><br>
+            <code>itemgetter("key")</code> 对 LCEL 的类型推断（schema）更友好，生产代码推荐用它。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>.bind() 不执行，只配置</strong><br>
+            返回新的 RunnableBinding 对象，原 Runnable 不变。常用于给 LLM 绑定 stop / tools。
+          </div>
+          <div class="tip-card" style="border-color:#e67e22;">
+            <span class="star">★</span><strong>整链支持 stream</strong><br>
+            <code>chain.stream(input)</code> 会把流式输出从 LLM 一路透传到最后，中间步骤不会阻断。
+          </div>
+        </div>
+      </div>
+
+      <!-- API 速查 -->
+      <div class="section" id="l03-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th><th>返回类型</th></tr>
+          <tr><td><code>a | b</code></td><td>创建顺序链</td><td>RunnableSequence</td></tr>
+          <tr><td><code>RunnableParallel({"k": runnable})</code></td><td>并发执行，结果合并为 dict</td><td>RunnableParallel</td></tr>
+          <tr><td><code>RunnablePassthrough()</code></td><td>原样透传输入</td><td>RunnablePassthrough</td></tr>
+          <tr><td><code>RunnablePassthrough.assign(k=fn)</code></td><td>在原 dict 上追加/覆盖字段</td><td>RunnableAssign</td></tr>
+          <tr><td><code>RunnableLambda(fn)</code></td><td>把函数包装成 Runnable</td><td>RunnableLambda</td></tr>
+          <tr><td><code>itemgetter("key")</code></td><td>从 dict 提取字段（标准库）</td><td>callable</td></tr>
+          <tr><td><code>runnable.bind(**kwargs)</code></td><td>预绑定参数，返回新 Runnable</td><td>RunnableBinding</td></tr>
+          <tr><td><code>chain.stream(input)</code></td><td>整链流式输出</td><td>Iterator[chunk]</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+  <!-- ════════════════════════ /第3课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第4课 ════════════════════════════════ -->
+  <section id="lesson-04">
+    <div class="lesson-banner banner-04">
+      <h2>第 4 课 · 输出解析器（Output Parsers）</h2>
+      <p>文件：04_output_parsers.py &nbsp;｜&nbsp; 核心：StrOutputParser · JsonOutputParser · PydanticOutputParser · get_format_instructions</p>
+    </div>
+    <div class="lesson-body">
+
+      <div class="section" id="l04-concept">
+        <h3>概念：三种解析器的定位</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#16a085;"><strong>StrOutputParser</strong><br>提取 AIMessage.content 为纯字符串。最简单，LCEL 链的标配。</div>
+          <div class="tip-card" style="border-color:#27ae60;"><strong>JsonOutputParser</strong><br>解析 LLM 输出的 JSON 字符串 → Python dict/list。无 schema，灵活，<strong>支持流式</strong>。</div>
+          <div class="tip-card" style="border-color:#2ecc71;"><strong>PydanticOutputParser</strong><br>解析为 Pydantic 模型实例，自动类型校验。有 schema，类型安全，<strong>不支持流式</strong>。</div>
+          <div class="tip-card" style="border-color:#1abc9c;"><strong>get_format_instructions()</strong><br>告诉 LLM 应该输出什么格式。必须注入 Prompt，否则 LLM 不知道格式要求。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l04-code">
+        <h3>核心用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">pydantic</span> <span class="kw">import</span> <span class="fn">BaseModel</span>, <span class="fn">Field</span>
+<span class="kw">from</span> <span class="tp">langchain_core.output_parsers</span> <span class="kw">import</span> <span class="fn">JsonOutputParser</span>, <span class="fn">PydanticOutputParser</span>
+
+<span class="cm"># ── JsonOutputParser：无 schema ──</span>
+json_parser = <span class="fn">JsonOutputParser</span>()
+prompt = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="st">"human"</span>, <span class="st">"{query}\n\n{format_instructions}"</span>),
+]).<span class="fn">partial</span>(format_instructions=json_parser.<span class="fn">get_format_instructions</span>())
+
+chain = prompt <span class="op">|</span> llm <span class="op">|</span> json_parser
+result = chain.<span class="fn">invoke</span>({<span class="st">"query"</span>: <span class="st">"提取：姓名张三，年龄28"</span>})
+<span class="cm"># → {'姓名': '张三', '年龄': 28}</span>
+
+
+<span class="cm"># ── PydanticOutputParser：有 schema ──</span>
+<span class="kw">class</span> <span class="fn">Movie</span>(<span class="fn">BaseModel</span>):
+    title: str = <span class="fn">Field</span>(description=<span class="st">"电影标题"</span>)
+    year: int = <span class="fn">Field</span>(description=<span class="st">"上映年份"</span>)
+    genres: List[str] = <span class="fn">Field</span>(description=<span class="st">"类型标签列表"</span>)
+    rating: float = <span class="fn">Field</span>(description=<span class="st">"评分，0-10"</span>)
+
+parser = <span class="fn">PydanticOutputParser</span>(pydantic_object=<span class="fn">Movie</span>)
+prompt = prompt_template.<span class="fn">partial</span>(
+    format_instructions=parser.<span class="fn">get_format_instructions</span>()
+)
+movie = (prompt <span class="op">|</span> llm <span class="op">|</span> parser).<span class="fn">invoke</span>({})
+print(movie.title, movie.rating)  <span class="cm"># 直接访问属性，类型已校验</span>
+
+
+<span class="cm"># ── JsonOutputParser 支持流式 ──</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> chain.<span class="fn">stream</span>({<span class="st">"query"</span>: <span class="st">"给我 name/age/city 的 JSON"</span>}):
+    print(chunk)  <span class="cm"># 逐步填充的 dict，如 {} → {'name':'A'} → {'name':'A','age':30}</span>
+</pre>
+      </div>
+
+      <div class="section" id="l04-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">              用户输入
+                   │
+                   ▼
+          ChatPromptTemplate
+       (含 format_instructions)     ← get_format_instructions() 注入
+                   │
+                   ▼
+            ChatOpenAI (temperature=0)
+                   │
+                   ▼
+           LLM 输出的文本字符串
+
+     ┌─────────────┼──────────────┐
+     ▼             ▼              ▼
+StrOutputParser  JsonOutputParser  PydanticOutputParser
+     │             │               │
+     ▼             ▼               ▼
+   str           dict/list     Pydantic 实例（类型已校验）</div>
+      </div>
+
+      <div class="section" id="l04-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>temperature=0</strong><br>结构化输出任务必须设 0，减少 LLM 输出格式随机变化的概率。</div>
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>get_format_instructions() 必须注入</strong><br>解析器和 Prompt 之间的桥梁，忘记注入 LLM 就不会按格式输出。</div>
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>Json vs Pydantic</strong><br>Json：无 schema，灵活，支持流式；Pydantic：有 schema，类型安全，不支持流式。</div>
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>Field(description=...) 很重要</strong><br>Pydantic 字段的 description 直接影响 LLM 输出质量，写清楚等于在 prompt 里说明。</div>
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>partial() 预填格式指令</strong><br>用 partial(format_instructions=...) 预填，invoke 时接口更干净。</div>
+          <div class="tip-card" style="border-color:#16a085;"><span class="star">★</span><strong>JsonOutputParser 流式</strong><br>stream() 时每个 chunk 是逐步填充的 dict，可用于前端实时展示结构化数据。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l04-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th><th>流式支持</th></tr>
+          <tr><td><code>StrOutputParser()</code></td><td>AIMessage → str</td><td>✅</td></tr>
+          <tr><td><code>JsonOutputParser()</code></td><td>str → dict/list（无 schema）</td><td>✅</td></tr>
+          <tr><td><code>PydanticOutputParser(pydantic_object=Model)</code></td><td>str → Pydantic 实例</td><td>❌</td></tr>
+          <tr><td><code>parser.get_format_instructions()</code></td><td>生成格式说明文本，注入 Prompt</td><td>—</td></tr>
+          <tr><td><code>Field(description="...")</code></td><td>Pydantic 字段描述，影响 LLM 输出质量</td><td>—</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ════════════════════════ /第4课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第5课 ════════════════════════════════ -->
+  <section id="lesson-05">
+    <div class="lesson-banner banner-05">
+      <h2>第 5 课 · Memory &amp; 对话历史管理</h2>
+      <p>文件：05_memory.py &nbsp;｜&nbsp; 核心：InMemoryChatMessageHistory · RunnableWithMessageHistory · session_id</p>
+    </div>
+    <div class="lesson-body">
+
+      <div class="section" id="l05-concept">
+        <h3>概念：记忆管理</h3>
+        <p>LLM 本身是无状态的，每次调用互相独立。Memory 的本质是：<strong>把对话历史手动拼接到下一次请求的 Prompt 中</strong>。LangChain 用 <code>RunnableWithMessageHistory</code> 自动化这个过程。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#c0392b;"><strong>InMemoryChatMessageHistory</strong><br>内存存储，重启丢失。开发/测试用。生产用 RedisChatMessageHistory 等。</div>
+          <div class="tip-card" style="border-color:#e91e63;"><strong>RunnableWithMessageHistory</strong><br>包装任意 LCEL 链，自动读写历史。invoke 后框架自动追加本轮消息。</div>
+          <div class="tip-card" style="border-color:#c0392b;"><strong>session_id</strong><br>区分不同用户/会话，每个 session 独立维护历史。多用户场景的基础。</div>
+          <div class="tip-card" style="border-color:#e91e63;"><strong>MessagesPlaceholder</strong><br>Prompt 里的历史插槽（第2课），RunnableWithMessageHistory 依赖它注入历史。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l05-code">
+        <h3>核心用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_core.chat_history</span> <span class="kw">import</span> <span class="fn">InMemoryChatMessageHistory</span>
+<span class="kw">from</span> <span class="tp">langchain_core.runnables.history</span> <span class="kw">import</span> <span class="fn">RunnableWithMessageHistory</span>
+
+<span class="cm"># ── Prompt 必须包含 MessagesPlaceholder ──</span>
+prompt = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="st">"system"</span>, <span class="st">"你是一个友好的助手。"</span>),
+    <span class="fn">MessagesPlaceholder</span>(variable_name=<span class="st">"history"</span>),
+    (<span class="st">"human"</span>, <span class="st">"{input}"</span>),
+])
+chain = prompt <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+
+<span class="cm"># ── session 存储（可换成 Redis/DB）──</span>
+store = {}
+<span class="kw">def</span> <span class="fn">get_session_history</span>(session_id: str):
+    <span class="kw">if</span> session_id <span class="kw">not in</span> store:
+        store[session_id] = <span class="fn">InMemoryChatMessageHistory</span>()
+    <span class="kw">return</span> store[session_id]
+
+<span class="cm"># ── 包装成有记忆的链 ──</span>
+chain_with_history = <span class="fn">RunnableWithMessageHistory</span>(
+    chain,
+    get_session_history,
+    input_messages_key=<span class="st">"input"</span>,    <span class="cm"># dict 中用户消息的 key</span>
+    history_messages_key=<span class="st">"history"</span>, <span class="cm"># MessagesPlaceholder 的名字</span>
+)
+
+<span class="cm"># ── 调用时必须传 session_id ──</span>
+cfg = {<span class="st">"configurable"</span>: {<span class="st">"session_id"</span>: <span class="st">"user_001"</span>}}
+chain_with_history.<span class="fn">invoke</span>({<span class="st">"input"</span>: <span class="st">"我叫大壮"</span>}, config=cfg)
+chain_with_history.<span class="fn">invoke</span>({<span class="st">"input"</span>: <span class="st">"你记得我叫什么？"</span>}, config=cfg)
+<span class="cm"># → 记得，你叫大壮</span>
+</pre>
+      </div>
+
+      <div class="section" id="l05-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">chain_with_history.invoke({"input":"..."}, config={"session_id":"abc"})
+         │
+         │ ① get_session_history("abc") → 历史对象
+         ▼
+   history.messages = [HumanMsg, AIMsg, ...]
+         │
+         │ ② 注入 MessagesPlaceholder("history")
+         ▼
+   [SystemMessage]
+   [历史消息 × N]        ← 自动拼接
+   [HumanMessage(当前)]
+         │
+         │ ③ LLM 推理
+         ▼
+      AIMessage
+         │
+         │ ④ StrOutputParser → str
+         │ ⑤ 自动追加：HumanMessage + AIMessage → 历史
+         ▼
+   历史更新（下次调用自动包含）</div>
+      </div>
+
+      <div class="section" id="l05-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#c0392b;"><span class="star">★</span><strong>config 必须传</strong><br><code>config={"configurable":{"session_id":"..."}}</code> 是触发记忆的必须参数，忘传则无记忆。</div>
+          <div class="tip-card" style="border-color:#c0392b;"><span class="star">★</span><strong>历史自动追加</strong><br>invoke 结束后框架自动把本轮 HumanMessage + AIMessage 写入历史，无需手动操作。</div>
+          <div class="tip-card" style="border-color:#c0392b;"><span class="star">★</span><strong>扩展点：get_session_history</strong><br>把 dict 换成 Redis/SQL 即可实现持久化记忆，接口不变。</div>
+          <div class="tip-card" style="border-color:#c0392b;"><span class="star">★</span><strong>session 隔离</strong><br>不同 session_id 完全隔离，天然支持多用户并发场景。</div>
+          <div class="tip-card" style="border-color:#c0392b;"><span class="star">★</span><strong>⚠️ 已废弃警告</strong><br>LangChain 1.x 标注 RunnableWithMessageHistory 为 deprecated，推荐迁移到 LangGraph 内置持久化，但目前学习阶段仍可用。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l05-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th></tr>
+          <tr><td><code>InMemoryChatMessageHistory()</code></td><td>内存对话历史，重启丢失</td></tr>
+          <tr><td><code>history.add_user_message("...")</code></td><td>手动添加用户消息</td></tr>
+          <tr><td><code>history.add_ai_message("...")</code></td><td>手动添加 AI 消息</td></tr>
+          <tr><td><code>history.messages</code></td><td>获取完整消息列表</td></tr>
+          <tr><td><code>RunnableWithMessageHistory(chain, get_fn, ...)</code></td><td>包装链，自动管理历史</td></tr>
+          <tr><td><code>config={"configurable":{"session_id":"..."}}</code></td><td>指定会话 ID（必须传）</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ════════════════════════ /第5课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第6课 ════════════════════════════════ -->
+  <section id="lesson-06">
+    <div class="lesson-banner banner-06">
+      <h2>第 6 课 · Tools &amp; Agent</h2>
+      <p>文件：06_tools_agent.py &nbsp;｜&nbsp; 核心：@tool · bind_tools · create_agent（LangChain 1.x）· ReAct 循环</p>
+    </div>
+    <div class="lesson-body">
+
+      <div class="section" id="l06-concept">
+        <h3>概念：Agent 执行循环</h3>
+        <p>Agent 的本质是 <strong>ReAct 循环</strong>：LLM 推理 → 决定是否调用工具 → 执行工具 → 把结果反馈给 LLM → 继续推理，直到 LLM 认为可以直接回答。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#2c3e50;"><strong>@tool</strong><br>把函数变成 Tool。docstring = description，LLM 靠它决定调用哪个工具。</div>
+          <div class="tip-card" style="border-color:#4ca1af;"><strong>bind_tools()</strong><br>把工具 schema 附加到 LLM 请求，LLM 才知道有哪些工具可用。</div>
+          <div class="tip-card" style="border-color:#2c3e50;"><strong>tool_calls</strong><br>LLM 决定调用工具时，AIMessage.tool_calls 有值，content 为空。</div>
+          <div class="tip-card" style="border-color:#4ca1af;"><strong>create_agent()（1.x 新版）</strong><br>底层是 LangGraph，返回 CompiledStateGraph。替代旧版 AgentExecutor。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l06-code">
+        <h3>核心用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_core.tools</span> <span class="kw">import</span> <span class="fn">tool</span>
+<span class="kw">from</span> <span class="tp">langchain.agents</span> <span class="kw">import</span> <span class="fn">create_agent</span>
+
+<span class="cm"># ── 定义工具（docstring 是 description）──</span>
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">add</span>(a: int, b: int) -> int:
+    <span class="st">"""计算两个整数之和。"""</span>
+    <span class="kw">return</span> a + b
+
+<span class="op">@</span><span class="fn">tool</span>
+<span class="kw">def</span> <span class="fn">get_weather</span>(city: str) -> str:
+    <span class="st">"""查询指定城市的天气。"""</span>
+    <span class="kw">return</span> weather_data.get(city, <span class="st">"无数据"</span>)
+
+<span class="cm"># ── bind_tools：让 LLM 知道工具存在 ──</span>
+llm_with_tools = llm.<span class="fn">bind_tools</span>([add, get_weather])
+msg = llm_with_tools.<span class="fn">invoke</span>([<span class="fn">HumanMessage</span>(<span class="st">"35 乘以 7？"</span>)])
+print(msg.tool_calls)  <span class="cm"># [{'name': 'multiply', 'args': {...}}]</span>
+
+<span class="cm"># ── create_agent（LangChain 1.x 新版）──</span>
+agent = <span class="fn">create_agent</span>(
+    model=llm,
+    tools=[add, get_weather],
+    system_prompt=<span class="st">"你是一个有用的助手。"</span>,
+)
+result = agent.<span class="fn">invoke</span>({
+    <span class="st">"messages"</span>: [<span class="fn">HumanMessage</span>(<span class="st">"12 乘以 8 再加 15 等于多少？"</span>)]
+})
+print(result[<span class="st">"messages"</span>][-<span class="nm">1</span>].content)  <span class="cm"># 最后一条是最终答案</span>
+
+<span class="cm"># ── stream：逐步观察执行过程 ──</span>
+<span class="kw">for</span> step <span class="kw">in</span> agent.<span class="fn">stream</span>({<span class="st">"messages"</span>: [...]}):
+    node = list(step.keys())[<span class="nm">0</span>]   <span class="cm"># "model" 或 "tools"</span>
+    print(node, step[node][<span class="st">"messages"</span>])
+</pre>
+        <p style="margin-top:14px; padding:10px 14px; background:#fff8e1; border-left:4px solid #f39c12; border-radius:4px; font-size:14px;">
+          ⚠️ <strong>新旧 API 变化（LangChain 1.x）</strong>：<code>create_tool_calling_agent</code> + <code>AgentExecutor</code> 已移除，改用 <code>create_agent()</code>（底层 LangGraph）。输入格式从 <code>{"input": "..."}</code> 变为 <code>{"messages": [HumanMessage(...)]}</code>。
+        </p>
+      </div>
+
+      <div class="section" id="l06-flow">
+        <h3>执行流程图（ReAct 循环）</h3>
+        <div class="flowchart">{"messages": [HumanMessage(...)]}
+         │
+         ▼ ── LangGraph 节点循环 ──
+    ┌─────────────────────────┐
+    │  model 节点（LLM 推理）  │
+    │  → tool_calls 或 最终答案│
+    └──────────┬──────────────┘
+               │ 有 tool_calls？
+       ┌───────┴───────┐
+       │ Yes            │ No
+       ▼                ▼
+  tools 节点          END
+  执行工具函数
+  返回 ToolMessage
+       │
+       └──→ 回到 model 节点
+
+输出：{"messages": [Human, AI(tool_calls), Tool, AI(最终答案)]}</div>
+      </div>
+
+      <div class="section" id="l06-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#2c3e50;"><span class="star">★</span><strong>docstring = description</strong><br>这是 LLM 决定调用哪个工具的唯一依据，写清楚比写代码注释更重要。</div>
+          <div class="tip-card" style="border-color:#2c3e50;"><span class="star">★</span><strong>tool_calls vs content</strong><br>tool_calls 非空 → LLM 要调工具；content 非空 → LLM 直接回答。两者互斥。</div>
+          <div class="tip-card" style="border-color:#2c3e50;"><span class="star">★</span><strong>新版输入格式</strong><br><code>{"messages": [HumanMessage(...)]}</code>，取最终答案用 <code>result["messages"][-1].content</code>。</div>
+          <div class="tip-card" style="border-color:#2c3e50;"><span class="star">★</span><strong>temperature=0</strong><br>Agent 任务必须设 0，让工具选择更稳定确定，避免随机乱调工具。</div>
+          <div class="tip-card" style="border-color:#2c3e50;"><span class="star">★</span><strong>stream 替代 verbose</strong><br>旧版 verbose=True 的效果，新版用 stream() 逐步观察每个节点输出。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l06-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th><th>版本</th></tr>
+          <tr><td><code>@tool</code></td><td>装饰器，把函数变成 Tool</td><td>通用</td></tr>
+          <tr><td><code>tool.name / .description / .args_schema</code></td><td>工具元信息</td><td>通用</td></tr>
+          <tr><td><code>llm.bind_tools(tools)</code></td><td>让 LLM 知道工具存在</td><td>通用</td></tr>
+          <tr><td><code>AIMessage.tool_calls</code></td><td>LLM 决定调用的工具列表</td><td>通用</td></tr>
+          <tr><td><code>create_agent(model, tools, system_prompt)</code></td><td>创建 Agent（新版）</td><td>1.x ✅</td></tr>
+          <tr><td><code>agent.invoke({"messages": [...]})</code></td><td>执行 Agent</td><td>1.x ✅</td></tr>
+          <tr><td><code>create_tool_calling_agent + AgentExecutor</code></td><td>旧版 API</td><td>0.x ❌已移除</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ════════════════════════ /第6课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第7课 ════════════════════════════════ -->
+  <section id="lesson-07">
+    <div class="lesson-banner banner-07">
+      <h2>第 7 课 · RAG 基础（检索增强生成）</h2>
+      <p>文件：07_rag_basics.py &nbsp;｜&nbsp; 核心：Document · TextSplitter · Embeddings · FAISS · 完整 RAG 链</p>
+    </div>
+    <div class="lesson-body">
+
+      <div class="section" id="l07-concept">
+        <h3>概念：RAG 解决什么问题</h3>
+        <p>LLM 的训练数据有截止日期，且无法知道你的私有数据。RAG 的思路：<strong>检索时先从知识库找最相关的文档片段，再把片段塞进 Prompt，让 LLM 基于这些上下文作答</strong>，而不是凭空生成。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#f39c12;"><strong>RecursiveCharacterTextSplitter</strong><br>递归按段落→换行→句子切分，保留语义完整性。chunk_overlap 防止边界截断。</div>
+          <div class="tip-card" style="border-color:#d35400;"><strong>Embeddings</strong><br>把文本转为高维向量，语义相似的文本向量距离近。阿里百炼用 text-embedding-v1。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><strong>FAISS</strong><br>Facebook 开源向量库，本地运行，适合开发和中小规模生产，支持持久化。</div>
+          <div class="tip-card" style="border-color:#d35400;"><strong>as_retriever()</strong><br>把 vectorstore 包装成 Runnable，才能接入 LCEL 链。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l07-code">
+        <h3>核心用法</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_text_splitters</span> <span class="kw">import</span> <span class="fn">RecursiveCharacterTextSplitter</span>
+<span class="kw">from</span> <span class="tp">langchain_community.vectorstores</span> <span class="kw">import</span> <span class="fn">FAISS</span>
+
+<span class="cm"># ── 1. 分割文本 ──</span>
+splitter = <span class="fn">RecursiveCharacterTextSplitter</span>(
+    chunk_size=<span class="nm">200</span>,
+    chunk_overlap=<span class="nm">30</span>,   <span class="cm"># 重叠防止语义在边界截断</span>
+)
+chunks = splitter.<span class="fn">create_documents</span>([raw_text])
+
+<span class="cm"># ── 2. 构建向量库 ──</span>
+<span class="cm"># AliyunEmbeddings 直接发送文本，绕过 tiktoken 问题</span>
+vectorstore = <span class="fn">FAISS</span>.<span class="fn">from_documents</span>(chunks, embeddings)
+vectorstore.<span class="fn">save_local</span>(<span class="st">"faiss_index"</span>)   <span class="cm"># 持久化</span>
+
+<span class="cm"># ── 3. 检索 ──</span>
+docs = vectorstore.<span class="fn">similarity_search</span>(query, k=<span class="nm">3</span>)
+docs_scores = vectorstore.<span class="fn">similarity_search_with_score</span>(query, k=<span class="nm">2</span>)
+
+<span class="cm"># ── 4. 完整 RAG 链 ──</span>
+retriever = vectorstore.<span class="fn">as_retriever</span>(search_kwargs={<span class="st">"k"</span>: <span class="nm">3</span>})
+
+rag_chain = (
+    {
+        <span class="st">"context"</span>: retriever <span class="op">|</span> <span class="fn">RunnableLambda</span>(format_docs),
+        <span class="st">"question"</span>: <span class="fn">RunnablePassthrough</span>(),
+    }
+    <span class="op">|</span> rag_prompt <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+)
+answer = rag_chain.<span class="fn">invoke</span>(<span class="st">"LangChain 是什么时候创建的？"</span>)
+
+<span class="cm"># ── 5. 加载持久化向量库 ──</span>
+loaded = <span class="fn">FAISS</span>.<span class="fn">load_local</span>(
+    <span class="st">"faiss_index"</span>, embeddings,
+    allow_dangerous_deserialization=<span class="nm">True</span>
+)
+</pre>
+        <p style="margin-top:14px; padding:10px 14px; background:#fff8e1; border-left:4px solid #f39c12; border-radius:4px; font-size:14px;">
+          ⚠️ <strong>阿里百炼 Embedding 坑</strong>：<code>OpenAIEmbeddings</code> 默认用 tiktoken 把文本转 token id 再发送，但阿里百炼只接受原始字符串。解决方案：自定义继承 <code>Embeddings</code> 的类，直接调用 OpenAI client 发送文本。
+        </p>
+      </div>
+
+      <div class="section" id="l07-flow">
+        <h3>执行流程图</h3>
+        <div class="flowchart">── 建库阶段 ─────────────────────────────────────
+原始长文本
+      │ RecursiveCharacterTextSplitter
+      ▼
+[chunk_0, chunk_1, ..., chunk_N]  (~200字/块)
+      │ embeddings.embed_documents()
+      ▼
+[vec_0, vec_1, ..., vec_N]  (高维向量)
+      │ FAISS.from_documents()
+      ▼
+FAISS 向量索引 → save_local()
+
+── 查询阶段 ─────────────────────────────────────
+用户问题
+      │ embed_query() → 查询向量
+      │ similarity_search() → 最近邻
+      ▼
+[相关 chunk_i, chunk_j, chunk_k]
+      │ format_docs() → 拼接字符串
+      ▼
+Prompt（上下文 + 问题）→ LLM → 答案</div>
+      </div>
+
+      <div class="section" id="l07-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>chunk_overlap 不能省</strong><br>设为 chunk_size 的 10-20%。避免重要信息刚好在块边界被截断。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>similarity_search_with_score 的分数</strong><br>FAISS 返回 L2 距离，越小越相似，不是 0-1 的相似度分数。实际值取决于 embedding 模型。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>as_retriever() 是接入 LCEL 的关键</strong><br>把 vectorstore 变成 Runnable，才能用 | 管道接入链。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>temperature=0</strong><br>RAG 中必须设 0，减少 LLM 在上下文基础上"发挥"的概率。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>持久化必须做</strong><br>save_local / load_local，避免每次启动重新 embed 文档，费时且费钱。</div>
+          <div class="tip-card" style="border-color:#f39c12;"><span class="star">★</span><strong>RAG 效果优先级</strong><br>数据质量 > 分块策略 > embedding 模型 > 检索策略 > Prompt 设计 > LLM 选择。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l07-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th></tr>
+          <tr><td><code>RecursiveCharacterTextSplitter(chunk_size, chunk_overlap)</code></td><td>递归分割文本</td></tr>
+          <tr><td><code>splitter.create_documents([text])</code></td><td>从字符串创建 Document 列表</td></tr>
+          <tr><td><code>FAISS.from_documents(docs, embeddings)</code></td><td>构建向量库</td></tr>
+          <tr><td><code>vectorstore.similarity_search(query, k=3)</code></td><td>检索 top-k 相关文档</td></tr>
+          <tr><td><code>vectorstore.similarity_search_with_score(query)</code></td><td>检索并返回 L2 距离分数</td></tr>
+          <tr><td><code>vectorstore.as_retriever(search_kwargs={"k":3})</code></td><td>转为 Runnable Retriever</td></tr>
+          <tr><td><code>vectorstore.save_local("path")</code></td><td>持久化到本地</td></tr>
+          <tr><td><code>FAISS.load_local("path", embeddings, allow_dangerous_deserialization=True)</code></td><td>从本地加载</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ════════════════════════ /第7课 ════════════════════════ -->
+
+  <div class="lesson-divider"></div>
+
+  <!-- ════════════════════════════════ 第8课 ════════════════════════════════ -->
+  <section id="lesson-08">
+    <div class="lesson-banner banner-08">
+      <h2>第 8 课 · RAG 进阶 —— 对话式 RAG &amp; 高级检索策略</h2>
+      <p>文件：08_rag_advanced.py &nbsp;｜&nbsp; 核心：问题重写 · 对话式RAG · MultiQueryRetriever · MMR · 分数过滤</p>
+    </div>
+    <div class="lesson-body">
+
+      <div class="section" id="l08-concept">
+        <h3>对话式 RAG：为什么需要问题重写</h3>
+        <p>用户追问"<em>它有什么优点？</em>"时，"它"指什么向量库不知道，检索结果会跑偏。解决方案：<strong>检索前先用对话历史把问题还原为完整、独立的问题</strong>，再去检索。</p>
+        <div class="tips-grid" style="margin-top:14px;">
+          <div class="tip-card" style="border-color:#6c3483;"><strong>问题重写（Contextualize）</strong><br>"它是什么时候创建的？" + 历史 → "LangChain 是什么时候创建的？"</div>
+          <div class="tip-card" style="border-color:#1a5276;"><strong>MultiQueryRetriever</strong><br>用 LLM 把一个问题改写成多个角度，分别检索后去重合并，提升召回率。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><strong>MMR 检索</strong><br>Maximal Marginal Relevance，在相关性和多样性间取平衡，减少结果冗余。</div>
+          <div class="tip-card" style="border-color:#1a5276;"><strong>分数过滤</strong><br>设距离阈值，过滤无关查询，实现"宁可不答也不乱答"。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l08-code">
+        <h3>MultiQuery &amp; MMR &amp; 对话式 RAG</h3>
+<pre>
+<span class="kw">from</span> <span class="tp">langchain_classic.retrievers</span> <span class="kw">import</span> <span class="fn">MultiQueryRetriever</span>
+
+<span class="cm"># ── 1. 问题重写链 ──</span>
+contextualize_prompt = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+    (<span class="st">"system"</span>, <span class="st">"根据对话历史把问题改写为独立完整的问题。"</span>),
+    <span class="fn">MessagesPlaceholder</span>(<span class="st">"history"</span>),
+    (<span class="st">"human"</span>, <span class="st">"{input}"</span>),
+])
+contextualize_chain = contextualize_prompt <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+
+<span class="cm"># ── 2. 对话式 RAG 链 ──</span>
+<span class="kw">def</span> <span class="fn">contextualize_and_retrieve</span>(input_dict):
+    history = input_dict.get(<span class="st">"history"</span>, [])
+    question = input_dict[<span class="st">"input"</span>]
+    standalone = contextualize_chain.<span class="fn">invoke</span>({<span class="st">"history"</span>: history, <span class="st">"input"</span>: question}) <span class="kw">if</span> history <span class="kw">else</span> question
+    <span class="kw">return</span> retriever.<span class="fn">invoke</span>(standalone)
+
+conversational_rag = (
+    <span class="fn">RunnablePassthrough</span>.<span class="fn">assign</span>(
+        context=<span class="fn">RunnableLambda</span>(contextualize_and_retrieve) <span class="op">|</span> <span class="fn">RunnableLambda</span>(format_docs)
+    )
+    <span class="op">|</span> qa_prompt <span class="op">|</span> llm <span class="op">|</span> <span class="fn">StrOutputParser</span>()
+)
+
+<span class="cm"># ── 3. MultiQueryRetriever ──</span>
+multi_retriever = <span class="fn">MultiQueryRetriever</span>.<span class="fn">from_llm</span>(
+    retriever=vectorstore.<span class="fn">as_retriever</span>(search_kwargs={<span class="st">"k"</span>: <span class="nm">2</span>}),
+    llm=llm,
+)
+docs = multi_retriever.<span class="fn">invoke</span>(<span class="st">"介绍向量存储方案"</span>)  <span class="cm"># 召回更多角度</span>
+
+<span class="cm"># ── 4. MMR 检索 ──</span>
+mmr_retriever = vectorstore.<span class="fn">as_retriever</span>(
+    search_type=<span class="st">"mmr"</span>,
+    search_kwargs={<span class="st">"k"</span>: <span class="nm">3</span>, <span class="st">"fetch_k"</span>: <span class="nm">10</span>, <span class="st">"lambda_mult"</span>: <span class="nm">0.5</span>}
+    <span class="cm"># lambda_mult: 0=最大多样性，1=纯相关性</span>
+)
+
+<span class="cm"># ── 5. 分数过滤（text-embedding-v1 实测范围）──</span>
+<span class="cm"># 相关查询 L2 ~4000-10000，无关查询 ~18000+</span>
+<span class="cm"># threshold=12000 可过滤无关内容</span>
+docs_scores = vectorstore.<span class="fn">similarity_search_with_score</span>(query, k=<span class="nm">5</span>)
+filtered = [doc <span class="kw">for</span> doc, score <span class="kw">in</span> docs_scores <span class="kw">if</span> score &lt; <span class="nm">12000</span>]
+</pre>
+      </div>
+
+      <div class="section" id="l08-flow">
+        <h3>执行流程图（对话式 RAG）</h3>
+        <div class="flowchart">用户追问（含指代词）+ 对话历史
+         │
+         │ contextualize_chain（问题重写）
+         ▼
+   独立完整问题（指代词已还原）
+         │
+         │ retriever.invoke()
+         ▼
+   相关文档 [doc1, doc2, doc3]
+         │ format_docs()
+         ▼
+   上下文字符串
+         │
+         ▼
+   QA Prompt（含历史 + 上下文 + 问题）
+         │ LLM 生成
+         ▼
+   基于私有知识 + 对话历史的回答
+         │ RunnableWithMessageHistory 追加历史
+         ▼
+   历史更新，等待下一轮</div>
+      </div>
+
+      <div class="section" id="l08-tips">
+        <h3>核心知识点</h3>
+        <div class="tips-grid">
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>问题重写是对话式 RAG 的关键</strong><br>检索前先 contextualize，把指代词还原为完整问题，否则"它""这个"会导致检索跑偏。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>对话式 RAG = Memory + RAG</strong><br>本质是第5课 Memory + 第7课 RAG 的组合，核心是 contextualize_chain。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>MultiQueryRetriever 适合问法多样的场景</strong><br>同一个问题不同表达召回不同文档，合并后覆盖面更广。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>MMR 的 lambda_mult</strong><br>0=最大多样性，1=纯相关性。知识库有大量相似内容时用 MMR 效果明显。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>分数阈值需校准</strong><br>FAISS L2 距离范围取决于 embedding 模型。text-embedding-v1 实测：相关 ~5000，无关 ~18000。</div>
+          <div class="tip-card" style="border-color:#6c3483;"><span class="star">★</span><strong>RAG 优化优先级</strong><br>数据质量 > 分块策略 > 检索策略（MultiQuery/MMR）> Prompt 设计 > LLM 选择。</div>
+        </div>
+      </div>
+
+      <div class="section" id="l08-api">
+        <h3>API 速查表</h3>
+        <table>
+          <tr><th>API</th><th>说明</th></tr>
+          <tr><td><code>contextualize_prompt | llm | StrOutputParser()</code></td><td>问题重写链</td></tr>
+          <tr><td><code>MultiQueryRetriever.from_llm(retriever, llm)</code></td><td>多角度检索，提升召回率</td></tr>
+          <tr><td><code>vectorstore.as_retriever(search_type="mmr", ...)</code></td><td>MMR 检索，减少冗余</td></tr>
+          <tr><td><code>search_kwargs={"k":3,"fetch_k":10,"lambda_mult":0.5}</code></td><td>MMR 参数：最终数/候选数/多样性权重</td></tr>
+          <tr><td><code>similarity_search_with_score(query, k=5)</code></td><td>带 L2 分数的检索，用于阈值过滤</td></tr>
+          <tr><td><code>[doc for doc, score in docs if score &lt; threshold]</code></td><td>按分数过滤，只用高置信度结果</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  <!-- ════════════════════════ /第8课 ════════════════════════ -->
+
+</main>
+
+<script>
+// 侧边栏手风琴折叠
+document.querySelectorAll('.nav-lesson').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const isOpen = btn.classList.contains('open');
+    // 收起所有
+    document.querySelectorAll('.nav-lesson').forEach(b => b.classList.remove('open'));
+    if (!isOpen) btn.classList.add('open');
+  });
+});
+
+// IntersectionObserver：正文滚动自动展开对应课程 nav
+const lessonSections = document.querySelectorAll('section[id^="lesson-"]');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id; // e.g. "lesson-01"
+      const num = id.replace('lesson-', ''); // "01"
+      document.querySelectorAll('.nav-lesson').forEach(btn => {
+        btn.classList.remove('open', 'active');
+      });
+      const target = document.querySelector(`.nav-lesson[data-target="${id}"]`);
+      if (target) {
+        target.classList.add('open', 'active');
+      }
+    }
+  });
+}, { threshold: 0.15 });
+
+lessonSections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
