@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 *.pyo
 faiss_index/
+faiss_index_multisource/
+lesson09_data/
