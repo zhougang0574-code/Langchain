@@ -37,6 +37,9 @@ DOMAINS = [
    ("l0205","05 外部加载〔进阶〕","把 prompt 抽到 json/yaml，改 prompt 不动代码；自己读文件构造 PromptTemplate（不用已弃用的 load_prompt）。",
     "prompt 与代码解耦，本质是把模板正文当配置运行时读入；加载出的对象和代码里建的没区别。",
     'data = json.load(open(path)) # 或 yaml.safe_load\nPromptTemplate(template=data["template"],\n               input_variables=data["input_variables"])'),
+   ("l0206","06 Few-shot〔进阶〕","给几个「输入→输出」范例让模型照样子做；范例被展开成多轮 Human/AI 消息插进 prompt。",
+    "格式特殊/风格要统一/zero-shot 不稳时用 few-shot；选 2~5 个有代表性的例子，太多费 token 还可能过拟合。",
+    'few = FewShotChatMessagePromptTemplate(\n  examples=[{"input":..., "output":...}],\n  example_prompt=ChatPromptTemplate.from_messages([("human","{input}"),("ai","{output}")]))\nChatPromptTemplate.from_messages([("system",...), few, ("human","{input}")])'),
  ]),
  ("d03","03 输出解析 OutputParser","#06b6d4",[
    ("l0301","01 StrOutputParser","输入 AIMessage，输出 .content 字符串；LCEL 链最常见的收尾组件。",
@@ -54,6 +57,9 @@ DOMAINS = [
    ("l0305","05 TypedDict〔进阶〕","用 Annotated[类型,'说明'] 定义结构，返回普通 dict，轻量无校验。",
     "选型：要校验/对象方法 → Pydantic；只要个带类型的 dict、图轻量 → TypedDict。",
     'class Review(TypedDict):\n    rating: Annotated[float, "评分0-10"]\nllm.with_structured_output(Review)'),
+   ("l0306","06 OutputFixingParser〔进阶〕","给解析器套自动修复：第一次失败不报错，让 LLM 把脏输出改成合法格式再解析。",
+    "治「格式手抖」不治「内容编造」；能用 with_structured_output 从源头少出错时优先，仍可能出脏数据再加它兜底。",
+    'base = PydanticOutputParser(pydantic_object=Actor)\nfix = OutputFixingParser.from_llm(parser=base, llm=llm)\nfix.invoke(脏输出)  # 失败→LLM修→重解析'),
  ]),
  ("d04","04 LCEL 与 Runnable","#10b981",[
    ("l0401","01 管道 |","a | b 把组件串成 RunnableSequence；prompt|model|parser 是最经典的链。",
@@ -125,6 +131,9 @@ DOMAINS = [
    ("l0708","08 对话式 RAG〔进阶〕","检索前先「问题重写」把指代词还原成独立问题，再走 RAG + 记忆。",
     "实测坑：改写指令在长历史里会失效（把改写做成作答），须强约束+示例+打印中间问题核对。",
     'standalone = contextualize_chain.invoke({"history":h, "input":q})\nretriever.invoke(standalone)  # 用还原后的独立问题检索'),
+   ("l0709","09 压缩与重排序〔进阶〕","检索后处理：压缩（抽相关句、省token）/重排序（精排留前几），用 ContextualCompressionRetriever 包装。",
+    "MMR/MultiQuery 管「召回」，本课管「召回后精炼」；代价是多花 LLM 调用，低延迟场景重排常改用专门 rerank 模型。",
+    'comp = ContextualCompressionRetriever(\n  base_retriever=retriever,\n  base_compressor=LLMChainExtractor.from_llm(llm))  # 或 LLMListwiseRerank'),
  ]),
  ("d08","08 流式与回调","#14b8a6",[
    ("l0801","01 stream","chain.stream() 逐 chunk 产出打字机效果；astream 是异步版。",
@@ -197,7 +206,10 @@ def build():
             f'<section class="domain" id="{did}">'
             f'<div class="banner" style="background:{grad}">{esc(dtitle)}</div>'
             f'<div class="cards">{"".join(cards)}</div></section>')
-    return TEMPLATE.replace("{{NAV}}","".join(nav)).replace("{{CONTENT}}","".join(content))
+    meta = f"{len(DOMAINS)} 概念域 · {sum(len(d[3]) for d in DOMAINS)} 课 · 暗色护眼"
+    return (TEMPLATE.replace("{{NAV}}","".join(nav))
+                    .replace("{{CONTENT}}","".join(content))
+                    .replace("{{META}}", meta))
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="zh"><head><meta charset="utf-8">
@@ -290,7 +302,7 @@ pre code { font-family: inherit; }
   <div class="sidebar-header">
     <div class="logo">LANGCHAIN COURSE</div>
     <h1>LangChain 课程 v2</h1>
-    <p>10 概念域 · 44 课 · 暗色护眼</p>
+    <p>{{META}}</p>
   </div>
   {{NAV}}
 </nav>

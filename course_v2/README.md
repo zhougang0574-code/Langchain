@@ -41,6 +41,7 @@ LangChain 的心智模型是「**一条由组件拼成的流水线**」：`Promp
   03_placeholder.py        MessagesPlaceholder 把历史消息插进模板
   04_partial.py            partial_variables / .partial() 预填部分变量
   05_load_external.py      从 json / yaml 外部文件加载 prompt          〔进阶〕
+  06_few_shot.py           Few-shot 少样本：给几个示例让模型照样输出   〔进阶〕
 
 03_输出解析OutputParser/
   01_str_parser.py         StrOutputParser：从 AIMessage 取纯文本
@@ -48,6 +49,7 @@ LangChain 的心智模型是「**一条由组件拼成的流水线**」：`Promp
   03_pydantic_parser.py    PydanticOutputParser + 字段校验
   04_structured_output.py  with_structured_output（现代首选写法）★重点对照
   05_typed_dict.py         TypedDict + Annotated 描述结构                〔进阶〕
+  06_output_fixing.py      OutputFixingParser 解析失败自动修复          〔进阶〕
 
 04_LCEL与Runnable/
   01_pipe_chain.py         prompt | model | parser：第一条链
@@ -77,6 +79,7 @@ LangChain 的心智模型是「**一条由组件拼成的流水线**」：`Promp
   06_retriever_strategy.py MMR / 分数过滤                              〔进阶〕
   07_multi_query.py        MultiQueryRetriever 多角度召回              〔进阶〕
   08_conversational_rag.py 对话式 RAG + 问题重写（含实测踩坑）         〔进阶〕
+  09_compression_rerank.py 上下文压缩 + 重排序：检索后处理精炼          〔进阶〕
 
 08_流式与回调/
   01_stream.py             stream / astream 打字机效果
@@ -114,6 +117,7 @@ LangChain 的心智模型是「**一条由组件拼成的流水线**」：`Promp
 | 补文档加载器全家桶 | 融合速通：txt/pdf/csv/md/docx 各演示一遍，不只 txt |
 | 补向量相似度直觉 | 融合速通：先用余弦相似度看懂「向量为什么能检索」，再上向量库 |
 | 抽 `_common.py` | 修掉旧版「每个 RAG 文件重抄一遍 Embeddings 类」的毛病，演示工程上的「复用」 |
+| 补进阶提质技巧 | few-shot 提示〔02/06〕、解析失败兜底 OutputFixingParser〔03/06〕、检索后处理压缩/重排〔07/09〕 |
 | 固定教学模板 | 每个 `.py` docstring 统一为：【域/序号】标题 → 与上一课的差异 → 新概念（只一个）→ 为什么 → 分段代码 → ★核心规律 + 交叉引用 |
 
 ---
