@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LangChain 课程 v2 · 图文笔记</title>
+<style>
+:root {
+  --sidebar-w: 280px;
+  --bg: #0f1722;          /* 页面背景：柔和深蓝灰 */
+  --surface: #1a2433;     /* 卡片：比背景略亮 */
+  --code-bg: #0b1220;     /* 代码 / 侧栏：最深 */
+  --text: #e6edf5;        /* 正文：柔和浅色，非纯白 */
+  --text-sub: #9fb0c3;
+  --text-muted: #6b7a8d;
+  --border: #2a3850;
+  --primary: #3b82f6;
+  --orange: #f59e0b;
+  --radius: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+       "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+       font-size: 17px; line-height: 1.8; color: var(--text); background: var(--bg);
+       display: flex; }
+
+/* ── 侧边栏 ── */
+#sidebar { width: var(--sidebar-w); height: 100vh; position: fixed; top: 0; left: 0;
+           overflow-y: auto; overflow-x: hidden; background: var(--code-bg);
+           border-right: 1px solid var(--border); padding-bottom: 40px; z-index: 100;
+           scrollbar-width: thin; scrollbar-color: #243045 transparent; }
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-thumb { background: #243045; border-radius: 2px; }
+.sidebar-header { padding: 26px 20px 18px; border-bottom: 1px solid #1e293b; }
+.sidebar-header .logo { font-size: 11px; color: #5a6b80; text-transform: uppercase;
+                        letter-spacing: 1.5px; margin-bottom: 6px; }
+.sidebar-header h1 { font-size: 18px; font-weight: 700; color: #f1f5f9; line-height: 1.3; }
+.sidebar-header p { font-size: 12.5px; color: #64748b; margin-top: 6px; }
+.nav-domain { margin-bottom: 1px; }
+.nav-domain-head { display: flex; align-items: center; gap: 10px; padding: 11px 20px;
+                   font-size: 15px; font-weight: 600; color: #a8b6c8; cursor: pointer;
+                   user-select: none; transition: all .15s; }
+.nav-domain-head:hover { color: #e2e8f0; background: #1b2740; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.arrow { margin-left: auto; font-size: 10px; color: #475569; transition: transform .2s ease; }
+.nav-domain.open .arrow { transform: rotate(90deg); color: #60a5fa; }
+.nav-sub { max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+.nav-domain.open .nav-sub { max-height: 600px; }
+.nav-sub-item { display: block; padding: 6px 20px 6px 39px; font-size: 13.5px;
+                color: #7d8da0; text-decoration: none; line-height: 1.5; transition: color .15s; }
+.nav-sub-item:hover { color: #b7c4d6; }
+.nav-sub-item.active { color: #60a5fa; font-weight: 600; background: #16294a; }
+
+/* ── 主内容 ── */
+#main { margin-left: var(--sidebar-w); flex: 1; padding: 0 0 80px; }
+.domain { max-width: 980px; }
+.banner { color: #fff; font-size: 23px; font-weight: 800; padding: 30px 40px;
+          margin: 30px 40px 6px; border-radius: 14px;
+          box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.cards { padding: 0 40px; }
+.lesson { background: var(--surface); margin: 18px 0; padding: 22px 26px;
+          border-radius: var(--radius); border: 1px solid var(--border);
+          border-left: 4px solid var(--primary); }
+.lesson h3 { font-size: 18px; color: #f1f5f9; margin-bottom: 10px; }
+.concept { color: var(--text-sub); line-height: 1.8; margin-bottom: 14px; font-size: 16.5px; }
+pre { background: var(--code-bg); color: #e2e8f0; padding: 16px 20px; border-radius: 8px;
+      overflow-x: auto; font-size: 14px; line-height: 1.75; border: 1px solid #1e2a3f;
+      font-family: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas, monospace; }
+pre code { font-family: inherit; }
+.rule { margin-top: 14px; background: #2c2410; border-left: 4px solid var(--orange);
+        padding: 12px 16px; border-radius: 8px; line-height: 1.8; color: #f0e6d2; font-size: 16px; }
+.rule span { display: block; font-weight: 700; color: #fbbf24; margin-bottom: 4px; font-size: 14px; }
+
+/* ── 回到顶部 ── */
+#back-top { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px;
+            background: var(--primary); color: #fff; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,.5); text-decoration: none; opacity: .9;
+            transition: opacity .15s, transform .15s; z-index: 200; }
+#back-top:hover { opacity: 1; transform: translateY(-2px); }
+
+@media (max-width: 768px) {
+  #sidebar { transform: translateX(-100%); }
+  #main { margin-left: 0; }
+  .banner, .cards { margin-left: 16px; margin-right: 16px; padding-left: 0; padding-right: 0; }
+}
+</style></head>
+<body>
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">LANGCHAIN COURSE</div>
+    <h1>LangChain 课程 v2</h1>
+    <p>10 概念域 · 44 课 · 暗色护眼</p>
+  </div>
+  <div class="nav-domain" data-domain="d01"><div class="nav-domain-head"><span class="dot" style="background:#3b82f6"></span>01 基础<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0101" class="nav-sub-item">01 Hello LLM</a><a href="#l0102" class="nav-sub-item">02 消息类型</a><a href="#l0103" class="nav-sub-item">03 init_chat_model</a><a href="#l0104" class="nav-sub-item">04 四种调用</a></div></div><div class="nav-domain" data-domain="d02"><div class="nav-domain-head"><span class="dot" style="background:#8b5cf6"></span>02 提示词 Prompt<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0201" class="nav-sub-item">01 PromptTemplate</a><a href="#l0202" class="nav-sub-item">02 ChatPromptTemplate</a><a href="#l0203" class="nav-sub-item">03 MessagesPlaceholder</a><a href="#l0204" class="nav-sub-item">04 partial</a><a href="#l0205" class="nav-sub-item">05 外部加载〔进阶〕</a></div></div><div class="nav-domain" data-domain="d03"><div class="nav-domain-head"><span class="dot" style="background:#06b6d4"></span>03 输出解析 OutputParser<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0301" class="nav-sub-item">01 StrOutputParser</a><a href="#l0302" class="nav-sub-item">02 JsonOutputParser</a><a href="#l0303" class="nav-sub-item">03 PydanticOutputParser</a><a href="#l0304" class="nav-sub-item">04 with_structured_output ★</a><a href="#l0305" class="nav-sub-item">05 TypedDict〔进阶〕</a></div></div><div class="nav-domain" data-domain="d04"><div class="nav-domain-head"><span class="dot" style="background:#10b981"></span>04 LCEL 与 Runnable<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0401" class="nav-sub-item">01 管道 |</a><a href="#l0402" class="nav-sub-item">02 RunnableLambda</a><a href="#l0403" class="nav-sub-item">03 RunnableParallel</a><a href="#l0404" class="nav-sub-item">04 Passthrough / assign</a><a href="#l0405" class="nav-sub-item">05 RunnableBranch</a><a href="#l0406" class="nav-sub-item">06 bind / config〔进阶〕</a></div></div><div class="nav-domain" data-domain="d05"><div class="nav-domain-head"><span class="dot" style="background:#f59e0b"></span>05 记忆 Memory<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0501" class="nav-sub-item">01 ChatMessageHistory</a><a href="#l0502" class="nav-sub-item">02 RunnableWithMessageHistory</a><a href="#l0503" class="nav-sub-item">03 trim_messages〔进阶〕</a></div></div><div class="nav-domain" data-domain="d06"><div class="nav-domain-head"><span class="dot" style="background:#ef4444"></span>06 工具与 Agent<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0601" class="nav-sub-item">01 @tool / bind_tools</a><a href="#l0602" class="nav-sub-item">02 手动工具循环</a><a href="#l0603" class="nav-sub-item">03 create_agent</a><a href="#l0604" class="nav-sub-item">04 多工具协作</a></div></div><div class="nav-domain" data-domain="d07"><div class="nav-domain-head"><span class="dot" style="background:#ec4899"></span>07 检索增强 RAG<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0701" class="nav-sub-item">01 Embedding 与相似度</a><a href="#l0702" class="nav-sub-item">02 FAISS 向量库</a><a href="#l0703" class="nav-sub-item">03 文档加载器</a><a href="#l0704" class="nav-sub-item">04 文本切分</a><a href="#l0705" class="nav-sub-item">05 完整 RAG 链</a><a href="#l0706" class="nav-sub-item">06 检索策略〔进阶〕</a><a href="#l0707" class="nav-sub-item">07 MultiQueryRetriever〔进阶〕</a><a href="#l0708" class="nav-sub-item">08 对话式 RAG〔进阶〕</a></div></div><div class="nav-domain" data-domain="d08"><div class="nav-domain-head"><span class="dot" style="background:#14b8a6"></span>08 流式与回调<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0801" class="nav-sub-item">01 stream</a><a href="#l0802" class="nav-sub-item">02 astream_events</a><a href="#l0803" class="nav-sub-item">03 Callbacks〔进阶〕</a></div></div><div class="nav-domain" data-domain="d09"><div class="nav-domain-head"><span class="dot" style="background:#6366f1"></span>09 工程化与可靠性<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l0901" class="nav-sub-item">01 with_retry</a><a href="#l0902" class="nav-sub-item">02 with_fallbacks</a><a href="#l0903" class="nav-sub-item">03 set_llm_cache</a><a href="#l0904" class="nav-sub-item">04 何时不上 LangGraph</a></div></div><div class="nav-domain" data-domain="d10"><div class="nav-domain-head"><span class="dot" style="background:#a855f7"></span>10 评估 Evaluation<span class="arrow">▶</span></div><div class="nav-sub"><a href="#l1001" class="nav-sub-item">01 Criteria 评估</a><a href="#l1002" class="nav-sub-item">02 QA 评估 + 回归测试</a></div></div>
+</nav>
+<main id="main"><section class="domain" id="d01"><div class="banner" style="background:linear-gradient(135deg,#1d4ed8 0%,#4f46e5 100%)">01 基础</div><div class="cards"><div class="lesson" id="l0101" data-domain="d01" style="border-left-color:#3b82f6"><h3>01 Hello LLM</h3><p class="concept">ChatOpenAI 接百炼；llm.invoke() 返回的是 AIMessage 对象，.content 才是文本，usage_metadata 看 token。</p><pre><code>llm = ChatOpenAI(api_key=..., base_url=..., model=&quot;qwen-plus&quot;)
+resp = llm.invoke(&quot;用一句话介绍 LangChain&quot;)
+resp.content          # 文本
+resp.usage_metadata   # token 消耗</code></pre><div class="rule"><span>★ 核心规律</span>llm.invoke(x) 永远返回 AIMessage，.content 是文本；temperature 控随机性（0 确定 / 0.7 创意）。</div></div><div class="lesson" id="l0102" data-domain="d01" style="border-left-color:#3b82f6"><h3>02 消息类型</h3><p class="concept">用 System/Human/AI 三种消息代替裸字符串：System 设角色、Human 用户、AI 历史回复。</p><pre><code>from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+llm.invoke([
+  SystemMessage(content=&quot;你是简洁助手&quot;),
+  HumanMessage(content=&quot;LangChain 是什么？&quot;),
+])</code></pre><div class="rule"><span>★ 核心规律</span>模型本身无状态，所谓记忆就是每次把过往消息再发一遍；要设角色/带历史必须用消息列表。</div></div><div class="lesson" id="l0103" data-domain="d01" style="border-left-color:#3b82f6"><h3>03 init_chat_model</h3><p class="concept">模型工厂：用同一个函数 + 字符串参数建模型，换 provider 只改字符串。</p><pre><code>from langchain.chat_models import init_chat_model
+llm = init_chat_model(model=&quot;qwen-plus&quot;, model_provider=&quot;openai&quot;,
+                      api_key=..., base_url=...)</code></pre><div class="rule"><span>★ 核心规律</span>接百炼这类 OpenAI 兼容服务 provider 填 &#x27;openai&#x27;；非官方模型名必须显式传 model_provider。</div></div><div class="lesson" id="l0104" data-domain="d01" style="border-left-color:#3b82f6"><h3>04 四种调用</h3><p class="concept">invoke（等完整）/ stream（逐片段）/ batch（并发批量）/ ainvoke（异步）。</p><pre><code>llm.invoke(msgs)
+for c in llm.stream(msgs): ...
+llm.batch([msgs1, msgs2])
+await llm.ainvoke(msgs)</code></pre><div class="rule"><span>★ 核心规律</span>这四个方法是 Runnable 接口的统一方法——prompt、parser、整条链都有，用法一致。</div></div></div></section><section class="domain" id="d02"><div class="banner" style="background:linear-gradient(135deg,#6d28d9 0%,#0ea5e9 100%)">02 提示词 Prompt</div><div class="cards"><div class="lesson" id="l0201" data-domain="d02" style="border-left-color:#8b5cf6"><h3>01 PromptTemplate</h3><p class="concept">带 {变量} 占位的文本模板，调用时填值；模板是一等公民，能校验/partial/进链/外部加载。</p><pre><code>p = PromptTemplate.from_template(&quot;用一句话解释 {topic}&quot;)
+p.invoke({&quot;topic&quot;: &quot;递归&quot;})</code></pre><div class="rule"><span>★ 核心规律</span>PromptTemplate 面向纯文本场景，产出 StringPromptValue；聊天场景用 ChatPromptTemplate。</div></div><div class="lesson" id="l0202" data-domain="d02" style="border-left-color:#8b5cf6"><h3>02 ChatPromptTemplate</h3><p class="concept">能填空的「消息列表」模板，日常主力；tuple/dict/消息类三种写法等价。</p><pre><code>ChatPromptTemplate.from_messages([
+  (&quot;system&quot;, &quot;你是{style}翻译助手&quot;),
+  (&quot;human&quot;, &quot;翻译：{text}&quot;),
+])</code></pre><div class="rule"><span>★ 核心规律</span>聊天模型一律用 ChatPromptTemplate；元组 (&#x27;role&#x27;,&#x27;模板&#x27;) 写法最常用。</div></div><div class="lesson" id="l0203" data-domain="d02" style="border-left-color:#8b5cf6"><h3>03 MessagesPlaceholder</h3><p class="concept">在模板里留一个「插历史」的槽，填值时传一串消息原样展开。</p><pre><code>ChatPromptTemplate.from_messages([
+  (&quot;system&quot;, &quot;你是助手&quot;),
+  MessagesPlaceholder(&quot;history&quot;),
+  (&quot;human&quot;, &quot;{input}&quot;),
+])</code></pre><div class="rule"><span>★ 核心规律</span>带记忆对话的标准结构：System → 历史槽 → 当前输入；〔05/02〕会自动往槽里灌历史。</div></div><div class="lesson" id="l0204" data-domain="d02" style="border-left-color:#8b5cf6"><h3>04 partial</h3><p class="concept">预先固定一部分变量，返回只差剩余变量的新模板；值可为常量或无参函数（动态求值）。</p><pre><code>base.partial(language=&quot;文言文&quot;)
+PromptTemplate.from_template(&quot;{time}:{q}&quot;).partial(time=now_func)</code></pre><div class="rule"><span>★ 核心规律</span>把「建模板时就能定的变量」提前固定，调用点只关心真正变化的变量；常用于预填 format_instructions。</div></div><div class="lesson" id="l0205" data-domain="d02" style="border-left-color:#8b5cf6"><h3>05 外部加载〔进阶〕</h3><p class="concept">把 prompt 抽到 json/yaml，改 prompt 不动代码；自己读文件构造 PromptTemplate（不用已弃用的 load_prompt）。</p><pre><code>data = json.load(open(path)) # 或 yaml.safe_load
+PromptTemplate(template=data[&quot;template&quot;],
+               input_variables=data[&quot;input_variables&quot;])</code></pre><div class="rule"><span>★ 核心规律</span>prompt 与代码解耦，本质是把模板正文当配置运行时读入；加载出的对象和代码里建的没区别。</div></div></div></section><section class="domain" id="d03"><div class="banner" style="background:linear-gradient(135deg,#0e7490 0%,#0284c7 100%)">03 输出解析 OutputParser</div><div class="cards"><div class="lesson" id="l0301" data-domain="d03" style="border-left-color:#06b6d4"><h3>01 StrOutputParser</h3><p class="concept">输入 AIMessage，输出 .content 字符串；LCEL 链最常见的收尾组件。</p><pre><code>chain = llm | StrOutputParser()   # 输出直接是 str</code></pre><div class="rule"><span>★ 核心规律</span>OutputParser 是流水线最后一段，把模型文本整理成目标形态；StrOutputParser 只取 .content。</div></div><div class="lesson" id="l0302" data-domain="d03" style="border-left-color:#06b6d4"><h3>02 JsonOutputParser</h3><p class="concept">让模型吐 JSON：get_format_instructions() 塞进 prompt + invoke() 解析成 dict。</p><pre><code>parser = JsonOutputParser()
+prompt = ...partial(format_instructions=parser.get_format_instructions())
+parser.invoke(llm.invoke(prompt))</code></pre><div class="rule"><span>★ 核心规律</span>结构化输出 = format_instructions 进 prompt + parser 解析返回，两件事配套；JsonOutputParser 返回松散 dict 不校验。</div></div><div class="lesson" id="l0303" data-domain="d03" style="border-left-color:#06b6d4"><h3>03 PydanticOutputParser</h3><p class="concept">用 Pydantic 模型定义结构 + 字段校验，返回强类型对象，可 .字段 访问。</p><pre><code>class Product(BaseModel):
+    name: str = Field(description=&quot;名称&quot;)
+    price: float
+PydanticOutputParser(pydantic_object=Product)</code></pre><div class="rule"><span>★ 核心规律</span>要「数据一定合法/字段齐全」用 Pydantic：模型即契约，field_validator 不通过直接抛错。</div></div><div class="lesson" id="l0304" data-domain="d03" style="border-left-color:#06b6d4"><h3>04 with_structured_output ★</h3><p class="concept">一行把模型变成「保证吐结构化对象」的新模型，免手拼格式说明、免挂 parser。</p><pre><code>structured = llm.with_structured_output(Product)
+structured.invoke(&quot;编一条机械键盘信息&quot;)  # → Product</code></pre><div class="rule"><span>★ 核心规律</span>要结构化输出默认首选 with_structured_output（走模型原生 function calling，更稳）；parser 留给不支持的场景。</div></div><div class="lesson" id="l0305" data-domain="d03" style="border-left-color:#06b6d4"><h3>05 TypedDict〔进阶〕</h3><p class="concept">用 Annotated[类型,&#x27;说明&#x27;] 定义结构，返回普通 dict，轻量无校验。</p><pre><code>class Review(TypedDict):
+    rating: Annotated[float, &quot;评分0-10&quot;]
+llm.with_structured_output(Review)</code></pre><div class="rule"><span>★ 核心规律</span>选型：要校验/对象方法 → Pydantic；只要个带类型的 dict、图轻量 → TypedDict。</div></div></div></section><section class="domain" id="d04"><div class="banner" style="background:linear-gradient(135deg,#065f46 0%,#0891b2 100%)">04 LCEL 与 Runnable</div><div class="cards"><div class="lesson" id="l0401" data-domain="d04" style="border-left-color:#10b981"><h3>01 管道 |</h3><p class="concept">a | b 把组件串成 RunnableSequence；prompt|model|parser 是最经典的链。</p><pre><code>chain = prompt | llm | StrOutputParser()
+chain.invoke({&quot;topic&quot;: &quot;梯度下降&quot;})</code></pre><div class="rule"><span>★ 核心规律</span>前一步输出类型须能当后一步输入；整条链又是 Runnable，自动有 invoke/stream/batch。</div></div><div class="lesson" id="l0402" data-domain="d04" style="border-left-color:#10b981"><h3>02 RunnableLambda</h3><p class="concept">把任意 Python 函数接进链；itemgetter 从 dict 抽字段更简洁。</p><pre><code>chain = prompt | llm | parser | RunnableLambda(add_sig)
+... | itemgetter(&quot;upper&quot;) | ...</code></pre><div class="rule"><span>★ 核心规律</span>RunnableLambda 是「函数↔链」转接头：入参=上一步输出，返回=下一步输入。</div></div><div class="lesson" id="l0403" data-domain="d04" style="border-left-color:#10b981"><h3>03 RunnableParallel</h3><p class="concept">同一输入扇出到多条子链并发执行，结果按 key 合并成 dict。</p><pre><code>RunnableParallel({&quot;优点&quot;: pros_chain, &quot;缺点&quot;: cons_chain})</code></pre><div class="rule"><span>★ 核心规律</span>{&#x27;k&#x27;: 子链} 字典在 LCEL 里被自动当 RunnableParallel；它会重构 dict，只留声明的 key。</div></div><div class="lesson" id="l0404" data-domain="d04" style="border-left-color:#10b981"><h3>04 Passthrough / assign</h3><p class="concept">Passthrough 原样透传；.assign 在原 dict 上追加字段、原 key 保留。</p><pre><code>RunnablePassthrough.assign(upper=lambda d: d[&quot;text&quot;].upper())
+# {&quot;text&quot;:..., &quot;upper&quot;:...}  原 key 保留</code></pre><div class="rule"><span>★ 核心规律</span>加工保留原字段→assign；彻底重构→Parallel；原样透传→Passthrough。RAG 链靠这套备 context+question。</div></div><div class="lesson" id="l0405" data-domain="d04" style="border-left-color:#10b981"><h3>05 RunnableBranch</h3><p class="concept">按条件选走不同子链：(条件,链)...+默认链，顺序匹配第一个 True。</p><pre><code>RunnableBranch(
+  (is_translate, translate_chain),
+  (is_math, math_chain),
+  chat_chain)</code></pre><div class="rule"><span>★ 核心规律</span>纯 if-else 选链用它就够，不必上 LangGraph（需循环/状态才用）。</div></div><div class="lesson" id="l0406" data-domain="d04" style="border-left-color:#10b981"><h3>06 bind / config〔进阶〕</h3><p class="concept">.bind(参数=值) 预绑调用参数（如 stop）；with_config 加 run_name/tags 便于追踪。</p><pre><code>llm.bind(stop=[&quot;2.&quot;])
+(prompt|llm|parser).with_config(run_name=&quot;要点链&quot;)</code></pre><div class="rule"><span>★ 核心规律</span>.bind 不执行只返回预设参数的新 Runnable；bind_tools〔06/01〕同理。with_config 只加可观测信息。</div></div></div></section><section class="domain" id="d05"><div class="banner" style="background:linear-gradient(135deg,#92400e 0%,#b45309 100%)">05 记忆 Memory</div><div class="cards"><div class="lesson" id="l0501" data-domain="d05" style="border-left-color:#f59e0b"><h3>01 ChatMessageHistory</h3><p class="concept">手动维护历史容器：add_user_message/add_ai_message + .messages 回填模板。</p><pre><code>history = InMemoryChatMessageHistory()
+chain.invoke({&quot;history&quot;: history.messages, &quot;input&quot;: q})
+history.add_user_message(q); history.add_ai_message(a)</code></pre><div class="rule"><span>★ 核心规律</span>记忆=存消息容器+每轮「读历史→调用→写历史」三步；手写一遍看清没有魔法。</div></div><div class="lesson" id="l0502" data-domain="d05" style="border-left-color:#f59e0b"><h3>02 RunnableWithMessageHistory</h3><p class="concept">把链包成自动带记忆，只管传 input；session_id 隔离多会话。</p><pre><code>RunnableWithMessageHistory(chain, get_history,
+  input_messages_key=&quot;input&quot;, history_messages_key=&quot;history&quot;)
+.invoke({&quot;input&quot;: q}, config={&quot;configurable&quot;:{&quot;session_id&quot;:&quot;A&quot;}})</code></pre><div class="rule"><span>★ 核心规律</span>自动化〔05/01〕的读写历史；session_id 是会话隔离的钥匙，天然支持多用户。现代标准做法。</div></div><div class="lesson" id="l0503" data-domain="d05" style="border-left-color:#f59e0b"><h3>03 trim_messages〔进阶〕</h3><p class="concept">按预算裁剪历史，控制 token；strategy=&#x27;last&#x27; 留最近，include_system 护角色。</p><pre><code>trim_messages(history, max_tokens=4, token_counter=len,
+  strategy=&quot;last&quot;, include_system=True)</code></pre><div class="rule"><span>★ 核心规律</span>长对话里先裁剪再调用，让记忆可持续；token_counter 决定预算单位（len 按条数/真实计数按 token）。</div></div></div></section><section class="domain" id="d06"><div class="banner" style="background:linear-gradient(135deg,#9f1239 0%,#e11d48 100%)">06 工具与 Agent</div><div class="cards"><div class="lesson" id="l0601" data-domain="d06" style="border-left-color:#ef4444"><h3>01 @tool / bind_tools</h3><p class="concept">@tool 把函数变工具，bind_tools 绑给模型；模型回复里多出 .tool_calls（调用意图）。</p><pre><code>@tool
+def add(a:int,b:int)-&gt;int:
+    &quot;&quot;&quot;两数相加&quot;&quot;&quot;
+    return a+b
+llm.bind_tools([add]).invoke(&quot;23加19&quot;).tool_calls</code></pre><div class="rule"><span>★ 核心规律</span>模型只「决定」不「执行」：输出 tool_calls（选哪个+传什么参数），靠 docstring 理解工具。</div></div><div class="lesson" id="l0602" data-domain="d06" style="border-left-color:#ef4444"><h3>02 手动工具循环</h3><p class="concept">执行 tool_calls 后用 ToolMessage(tool_call_id=...) 回灌，循环到模型不再要求调工具。</p><pre><code>for call in ai.tool_calls:
+    r = tools_by_name[call[&quot;name&quot;]].invoke(call[&quot;args&quot;])
+    messages.append(ToolMessage(content=str(r), tool_call_id=call[&quot;id&quot;]))</code></pre><div class="rule"><span>★ 核心规律</span>工具循环=反复「invoke→有tool_calls就执行并回灌→再invoke」；这就是 ReAct 骨架。</div></div><div class="lesson" id="l0603" data-domain="d06" style="border-left-color:#ef4444"><h3>03 create_agent</h3><p class="concept">一行建 ReAct Agent，内部自动跑工具循环（底层 LangGraph）。</p><pre><code>agent = create_agent(llm, tools=[add, multiply],
+                     system_prompt=&quot;计算调工具&quot;)
+agent.invoke({&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;...&quot;}]})</code></pre><div class="rule"><span>★ 核心规律</span>传 model+tools+system_prompt 即得 Agent；输入 {&#x27;messages&#x27;:[...]}，result[&#x27;messages&#x27;] 是完整轨迹。</div></div><div class="lesson" id="l0604" data-domain="d06" style="border-left-color:#ef4444"><h3>04 多工具协作</h3><p class="concept">Agent 用「上一个工具的输出」决定下一步，自主编排调用顺序。</p><pre><code>create_agent(llm, tools=[search_products, check_inventory], ...)
+# 先搜到 id → 再用 id 查库存，顺序由 Agent 自定</code></pre><div class="rule"><span>★ 核心规律</span>Agent 相对固定链的优势是动态编排；工具 docstring 要清楚、任何情况都要有合法返回（别返回 None）。</div></div></div></section><section class="domain" id="d07"><div class="banner" style="background:linear-gradient(135deg,#a21caf 0%,#db2777 100%)">07 检索增强 RAG</div><div class="cards"><div class="lesson" id="l0701" data-domain="d07" style="border-left-color:#ec4899"><h3>01 Embedding 与相似度</h3><p class="concept">把文本变向量，语义近则向量近；余弦相似度衡量接近程度。</p><pre><code>vec = embeddings.embed_query(&quot;什么是 LangChain？&quot;)
+cosine(q_vec, doc_vec)  # 越接近1越相似</code></pre><div class="rule"><span>★ 核心规律</span>检索本质=问题向量化找最近的文档向量；这是 RAG「按语义检索」的根基。</div></div><div class="lesson" id="l0702" data-domain="d07" style="border-left-color:#ec4899"><h3>02 FAISS 向量库</h3><p class="concept">from_texts 建库 / similarity_search 检索 / save_local·load_local 持久化。</p><pre><code>vs = FAISS.from_texts(chunks, embeddings)
+vs.save_local(dir)
+vs.similarity_search(&quot;RAG 是什么&quot;, k=2)</code></pre><div class="rule"><span>★ 核心规律</span>向量库=批量存向量+快速最近邻+可落盘复用；FAISS 返回 L2 距离（越小越相似）。</div></div><div class="lesson" id="l0703" data-domain="d07" style="border-left-color:#ec4899"><h3>03 文档加载器</h3><p class="concept">各种 Loader 把 txt/pdf/csv/docx 统一读成 list[Document]（page_content+metadata）。</p><pre><code>TextLoader(path).load()
+PyPDFLoader(path).load()   # 按页
+CSVLoader(path).load()    # 按行</code></pre><div class="rule"><span>★ 核心规律</span>不管原格式如何统一成 Document；拆分粒度不同（PDF按页/CSV按行）；metadata 可溯源。</div></div><div class="lesson" id="l0704" data-domain="d07" style="border-left-color:#ec4899"><h3>04 文本切分</h3><p class="concept">RecursiveCharacterTextSplitter 按 chunk_size/chunk_overlap 切块。</p><pre><code>RecursiveCharacterTextSplitter(chunk_size=120,
+  chunk_overlap=20).split_documents(docs)</code></pre><div class="rule"><span>★ 核心规律</span>切分是 RAG 质量关键旋钮：太大噪声多、太小上下文断；overlap 对冲边界切断语义。</div></div><div class="lesson" id="l0705" data-domain="d07" style="border-left-color:#ec4899"><h3>05 完整 RAG 链</h3><p class="concept">{context: 检索+拼接, question: 透传} | prompt | llm | parser。</p><pre><code>rag = ({&quot;context&quot;: retriever|RunnableLambda(format_docs),
+        &quot;question&quot;: RunnablePassthrough()}
+       | prompt | llm | StrOutputParser())</code></pre><div class="rule"><span>★ 核心规律</span>retriever 是 Runnable 可直接进链；prompt 里「只依据上下文、没有就说不知道」是少幻觉的来源。</div></div><div class="lesson" id="l0706" data-domain="d07" style="border-left-color:#ec4899"><h3>06 检索策略〔进阶〕</h3><p class="concept">MMR（相关+不重复去冗余）；分数过滤（不够相关就不返回）。</p><pre><code>vs.as_retriever(search_type=&quot;mmr&quot;,
+  search_kwargs={&quot;k&quot;:3,&quot;fetch_k&quot;:8,&quot;lambda_mult&quot;:0.5})</code></pre><div class="rule"><span>★ 核心规律</span>MMR 用 fetch_k 多召回再精选；分数过滤阈值必须按自己数据实测（L2 量级随模型变，别照搬）。</div></div><div class="lesson" id="l0707" data-domain="d07" style="border-left-color:#ec4899"><h3>07 MultiQueryRetriever〔进阶〕</h3><p class="concept">LLM 把问题扩写成多个子查询，分别检索再合并去重，提升召回。</p><pre><code>MultiQueryRetriever.from_llm(
+  retriever=vs.as_retriever(search_kwargs={&quot;k&quot;:2}), llm=llm)</code></pre><div class="rule"><span>★ 核心规律</span>对抗「用户措辞和库里措辞不一致」的漏检；可 .llm_chain.invoke() 看生成的子查询。</div></div><div class="lesson" id="l0708" data-domain="d07" style="border-left-color:#ec4899"><h3>08 对话式 RAG〔进阶〕</h3><p class="concept">检索前先「问题重写」把指代词还原成独立问题，再走 RAG + 记忆。</p><pre><code>standalone = contextualize_chain.invoke({&quot;history&quot;:h, &quot;input&quot;:q})
+retriever.invoke(standalone)  # 用还原后的独立问题检索</code></pre><div class="rule"><span>★ 核心规律</span>实测坑：改写指令在长历史里会失效（把改写做成作答），须强约束+示例+打印中间问题核对。</div></div></div></section><section class="domain" id="d08"><div class="banner" style="background:linear-gradient(135deg,#0f766e 0%,#14b8a6 100%)">08 流式与回调</div><div class="cards"><div class="lesson" id="l0801" data-domain="d08" style="border-left-color:#14b8a6"><h3>01 stream</h3><p class="concept">chain.stream() 逐 chunk 产出打字机效果；astream 是异步版。</p><pre><code>for chunk in chain.stream({&quot;topic&quot;: x}):
+    print(chunk, end=&quot;&quot;, flush=True)</code></pre><div class="rule"><span>★ 核心规律</span>流式是整条链的能力；StrOutputParser 把模型增量 chunk 直接吐成字符串片段。</div></div><div class="lesson" id="l0802" data-domain="d08" style="border-left-color:#14b8a6"><h3>02 astream_events</h3><p class="concept">按时间吐出链内部所有事件（模型逐token/检索开始结束…）。</p><pre><code>async for ev in chain.astream_events(x):
+    if ev[&quot;event&quot;]==&quot;on_chat_model_stream&quot;:
+        ev[&quot;data&quot;][&quot;chunk&quot;].content</code></pre><div class="rule"><span>★ 核心规律</span>stream 只给最终文本，astream_events 给链内部全事件；按 event[&#x27;event&#x27;] 类型分流做细粒度 UI。</div></div><div class="lesson" id="l0803" data-domain="d08" style="border-left-color:#14b8a6"><h3>03 Callbacks〔进阶〕</h3><p class="concept">继承 BaseCallbackHandler 重写 on_xxx 钩子，自动监控耗时/token。</p><pre><code>class Stats(BaseCallbackHandler):
+    def on_llm_end(self, response, **kw): ...
+llm.invoke(q, config={&quot;callbacks&quot;:[Stats()]})</code></pre><div class="rule"><span>★ 核心规律</span>回调是「推」式可观测：注册 Handler 自动触发，不改链代码就加监控；astream_events 是「拉」式。</div></div></div></section><section class="domain" id="d09"><div class="banner" style="background:linear-gradient(135deg,#4338ca 0%,#6366f1 100%)">09 工程化与可靠性</div><div class="cards"><div class="lesson" id="l0901" data-domain="d09" style="border-left-color:#6366f1"><h3>01 with_retry</h3><p class="concept">失败自动重试，对调用方透明，免手写 try/except。</p><pre><code>RunnableLambda(flaky).with_retry(stop_after_attempt=5)</code></pre><div class="rule"><span>★ 核心规律</span>扛「偶发抖动」：再试一次可能就好；stop_after_attempt 控次数；返回新 Runnable。</div></div><div class="lesson" id="l0902" data-domain="d09" style="border-left-color:#6366f1"><h3>02 with_fallbacks</h3><p class="concept">主方案彻底失败时按序切到备用方案。</p><pre><code>broken_llm.with_fallbacks([good_llm])</code></pre><div class="rule"><span>★ 核心规律</span>扛「整体故障」：主模型挂了换备用；和 retry 互补，可叠加使用。</div></div><div class="lesson" id="l0903" data-domain="d09" style="border-left-color:#6366f1"><h3>03 set_llm_cache</h3><p class="concept">相同输入命中缓存，不重复调 LLM，省钱省时。</p><pre><code>set_llm_cache(InMemoryCache())
+llm.invoke(q)  # 第二次相同输入命中缓存</code></pre><div class="rule"><span>★ 核心规律</span>InMemoryCache 开发用（重启即丢），生产换 SQLiteCache；命中条件是输入完全相同（会抹掉随机性）。</div></div><div class="lesson" id="l0904" data-domain="d09" style="border-left-color:#6366f1"><h3>04 何时不上 LangGraph</h3><p class="concept">纯 if-else 选链用 RunnableBranch；需循环/状态持久化/人工干预才上 LangGraph。</p><pre><code>RunnableBranch((cond1, chain1), (cond2, chain2), default)</code></pre><div class="rule"><span>★ 核心规律</span>工程好品味=用刚好够用的工具；create_agent 这类循环调工具的场景底层才用 LangGraph。</div></div></div></section><section class="domain" id="d10"><div class="banner" style="background:linear-gradient(135deg,#7e22ce 0%,#a855f7 100%)">10 评估 Evaluation</div><div class="cards"><div class="lesson" id="l1001" data-domain="d10" style="border-left-color:#a855f7"><h3>01 Criteria 评估</h3><p class="concept">用 LLM 当裁判按标准打分；labeled_criteria 对照参考资料查 RAG 忠实度（幻觉）。</p><pre><code>load_evaluator(&quot;criteria&quot;, criteria=&quot;conciseness&quot;, llm=llm)
+load_evaluator(&quot;labeled_criteria&quot;, criteria={&quot;faithfulness&quot;:&quot;...&quot;}, llm=llm)</code></pre><div class="rule"><span>★ 核心规律</span>主观维度用 criteria；要对照资料判断是否编造用 labeled_criteria（忘带 labeled 拿不到 reference）。</div></div><div class="lesson" id="l1002" data-domain="d10" style="border-left-color:#a855f7"><h3>02 QA 评估 + 回归测试</h3><p class="concept">对照标准答案判 CORRECT/INCORRECT；套在固定测试集上跑出通过率。</p><pre><code>qa = load_evaluator(&quot;qa&quot;, llm=llm)
+qa.evaluate_strings(input=q, prediction=ans, reference=ref)</code></pre><div class="rule"><span>★ 核心规律</span>把「感觉还行」变成「通过率2/3→3/3」可量化结论；测试集持续积累每个 badcase。</div></div></div></section></main>
+<a href="#" id="back-top">↑</a>
+<script>
+// 手风琴：点击域标题展开 / 收起
+document.querySelectorAll('.nav-domain-head').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+});
+// 滚动高亮 + 自动展开当前域（IntersectionObserver 监听正文）
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.id;
+    document.querySelectorAll('.nav-sub-item').forEach(a =>
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    const did = e.target.dataset.domain;
+    document.querySelectorAll('.nav-domain').forEach(d =>
+      d.classList.toggle('open', d.dataset.domain === did));
+  });
+}, { rootMargin: '-45% 0px -50% 0px' });
+document.querySelectorAll('.lesson').forEach(l => io.observe(l));
+document.querySelector('.nav-domain')?.classList.add('open');  // 默认展开第一个域
+</script></body></html>

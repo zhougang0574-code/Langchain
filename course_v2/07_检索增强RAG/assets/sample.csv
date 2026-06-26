@@ -1,0 +1,5 @@
+name,role,note
+ChatOpenAI,模型,接入 OpenAI 兼容接口的聊天模型
+PromptTemplate,提示词,带占位符的文本模板
+StrOutputParser,解析器,从 AIMessage 取出纯文本
+FAISS,向量库,本地向量检索，可持久化

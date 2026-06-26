@@ -1,0 +1,22 @@
+# LangChain 学习项目依赖（Python 3.11，当前 .venv 实测版本）
+# 新电脑： pip install -r requirements.txt
+
+langchain==1.3.4
+langchain-core==1.4.2
+langchain-community==0.4.2
+langchain-classic==1.0.7
+langchain-openai==1.2.2
+langchain-text-splitters==1.1.2
+
+openai==2.41.0
+python-dotenv==1.2.2
+pydantic==2.13.4
+
+# 检索增强 RAG 域用到
+faiss-cpu==1.13.2
+pypdf==6.13.2
+
+# 07_检索增强RAG/03_document_loaders.py 加载 .docx 用到（当前 .venv 可能未装，新机一并装上）
+docx2txt
+# 07_检索增强RAG/03_document_loaders.py 加载 .md/.html 等非结构化格式用到（可选）
+unstructured

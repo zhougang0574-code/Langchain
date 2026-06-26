@@ -1,0 +1,5 @@
+{
+  "_type": "prompt",
+  "input_variables": ["product"],
+  "template": "你是一个资深品牌命名顾问。请为「{product}」起 3 个好听、好记的中文产品名，每个名字附一句话说明寓意。"
+}

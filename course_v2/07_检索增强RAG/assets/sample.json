@@ -1,0 +1,7 @@
+{
+  "framework": "LangChain",
+  "author": "Harrison Chase",
+  "year": 2022,
+  "components": ["Model", "Prompt", "Parser", "Retriever", "Tool"],
+  "applications": ["RAG", "Agent", "Memory"]
+}

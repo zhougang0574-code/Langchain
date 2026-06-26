@@ -1,0 +1,25 @@
+LangChain 知识库（课程示例用）
+
+什么是 LangChain
+LangChain 是一个用于构建大语言模型（LLM）应用的开源框架，由 Harrison Chase 于 2022 年 10 月创建。它把提示词、模型、解析器、检索器、工具等组件抽象成统一的 Runnable 接口，用 LCEL（管道操作符）把它们组合成链。
+
+LCEL 是什么
+LCEL（LangChain Expression Language）是 LangChain 的组合语言，用管道操作符 | 把组件串成数据流。最经典的链是 prompt | model | parser。整条链本身也是 Runnable，天然支持 invoke、stream、batch、ainvoke 四种调用方式。
+
+什么是 RAG
+RAG（Retrieval-Augmented Generation，检索增强生成）解决 LLM 两个固有问题：训练数据有截止日期、无法回答私有知识。做法是：先把私有文档切块、向量化、存入向量库；提问时检索出最相关的若干块，作为上下文喂给模型，让模型基于这些资料作答。
+
+什么是向量与 Embedding
+Embedding（向量化）把文本变成一串数字（向量），语义相近的文本向量也相近。检索时把问题也向量化，再用相似度（如余弦相似度）找出最接近的文档向量。这是 RAG 能"按语义"而非"按关键词"检索的基础。
+
+什么是 FAISS
+FAISS 是 Facebook（Meta）开源的向量检索库，擅长在大量向量里快速找最近邻。LangChain 用它做本地向量库，可以把建好的索引保存到磁盘、下次直接加载，避免每次都重新向量化。
+
+什么是 Agent
+Agent 是会"自己调用工具"的 LLM 应用。模型先决定调哪个工具、传什么参数，代码执行工具后把结果回灌给模型，循环往复直到给出最终答案。这套"推理-行动"循环称为 ReAct。LangChain 的 create_agent 可以一行建好一个 ReAct Agent，其底层基于 LangGraph。
+
+什么是 Memory
+Memory（记忆）让对话能记住上下文。由于模型本身无状态，记忆的本质是每轮把过往消息再发一遍。LangChain 现在用 RunnableWithMessageHistory 自动管理历史，并用 session_id 区分不同用户的会话。
+
+LangChain 与 LangGraph 的关系
+LangChain 擅长把组件组合成"链"，适合线性流程。LangGraph 是同一团队的另一个框架，擅长用"图"编排带分支、循环、状态持久化、人工干预的复杂流程。简单的 if-else 选链用 LangChain 的 RunnableBranch 就够，需要循环和状态时才上 LangGraph。
