@@ -179,6 +179,48 @@ DOMAINS = [
  ]),
 ]
 
+# 进阶路线图：把本课程往「能搭生产级 Agent」方向延伸的知识地图。
+# 注意：这些不是本仓库的 .py 课（有的还不属于 LangChain），只作学习路线，不计入课数。
+# 每组：(标题, 主题色, [项])；每项：(标题, 说明, 去哪补)
+ROADMAP = [
+ ("A. Agent 核心机制（主轴，最该练）", "#ef4444", [
+   ("手写 ReAct 循环", "不依赖框架，自己写「模型决定→执行工具→观察结果→再决定」的 while 循环，看清 Agent 的本质而非把它当魔法。",
+    "本项目〔06/02〕已起头，可加厚到脱离 create_agent 手搓一遍"),
+   ("Agent 设计模式", "Reflection 反思、Router 路由、Plan-and-Execute 先规划再执行——单 Agent 上加策略，按场景选型。",
+    "本项目〔06/05〕〔06/06〕已补反思/路由，Plan-Execute 可再加一课"),
+   ("多 Agent 协作", "supervisor 调度、agent 之间 handoff 移交、共享状态——多个专家 Agent 分工合作。",
+    "去姊妹项目 LangGraph（本项目不展开）"),
+   ("状态与持久化", "checkpoint 断点续跑、长任务恢复、对话跨会话保存——让 Agent 能「记住进度」。",
+    "去 LangGraph"),
+ ]),
+ ("B. 工具与协议", "#f59e0b", [
+   ("工具的本质", "工具调用底层是 JSON Schema 描述 + 模型的 function calling，理解它就不会觉得 @tool 是魔法。",
+    "本项目〔06/01〕，可再深挖 schema 与原生 function calling"),
+   ("MCP（模型上下文协议）", "Anthropic 提出的开放标准：外部工具/数据源以标准接口接给任意模型/客户端。client-server、stdio/HTTP 两种传输。",
+    "本项目〔06/07〕已起头（stdio），可加 HTTP/SSE 远程 server 一课"),
+   ("Skill（技能）", "按需加载的指令包：description 决定何时触发，正文是操作手册，可带脚本/资料。和提示词工程同源。",
+    "Claude 生态的通用能力，独立专题，跨框架"),
+ ]),
+ ("C. 上下文工程（被低估，却是 Agent 成败关键）", "#14b8a6", [
+   ("上下文窗口管理", "放什么进上下文、放多少、怎么压缩——和 Skill 的按需加载、记忆的 trim 是同一件事的不同面。",
+    "通用能力；本项目〔05/03〕trim、Skill 思路各沾一角"),
+   ("记忆系统进阶", "短期 vs 长期记忆、向量记忆、记忆检索与写回——让 Agent 跨轮、跨会话记住要点。",
+    "本项目〔05〕只到短期 trim；进阶可结合〔07〕RAG 自建，或去 LangGraph"),
+   ("Agentic RAG", "把检索做成 Agent 的一个工具（按需多次检索、自评是否够），而非固定的一次性管道。",
+    "本项目〔07〕是管道式 RAG，差「检索即工具」这一步，可加一课"),
+ ]),
+ ("D. 生产化（决定 demo 能否上线）", "#6366f1", [
+   ("评估体系", "不只逐条打分：还要轨迹评估（Agent 走的步骤对不对）、回归测试集、LLM-as-judge 的偏差控制。",
+    "本项目〔10〕已起步，最该加厚的一块"),
+   ("可观测性", "tracing（如 LangSmith）看清每一步的输入输出、token/延迟/成本——「看见 Agent 在干嘛」。",
+    "本项目〔08/03〕callback 沾边；tracing 工具属通用专题"),
+   ("可靠性与安全", "超时、循环上限、工具失败兜底、防 prompt 注入、human-in-the-loop 人工确认。",
+    "本项目〔09〕沾重试/降级；安全与人工干预去 LangGraph / 通用"),
+   ("成本与延迟权衡", "模型选型、缓存、并行调用——同样效果下更省更快，是工程好品味。",
+    "本项目〔09/03〕缓存、〔04/03〕并行各沾一角"),
+ ]),
+]
+
 def esc(s): return html.escape(s)
 
 def build():
@@ -215,7 +257,34 @@ def build():
             f'<section class="domain" id="{did}">'
             f'<div class="banner" style="background:{grad}">{esc(dtitle)}</div>'
             f'<div class="cards">{"".join(cards)}</div></section>')
-    meta = f"{len(DOMAINS)} 概念域 · {sum(len(d[3]) for d in DOMAINS)} 课 · 暗色护眼"
+
+    # ── 进阶路线图（独立区块；不计入课数，不破坏「课卡片==.py」约束）──
+    rm_subs, rm_groups = [], []
+    for gi, (gtitle, gcolor, items) in enumerate(ROADMAP):
+        gid = f"rm{gi}"
+        rm_subs.append(f'<a href="#{gid}" class="nav-sub-item">{esc(gtitle)}</a>')
+        rm_cards = "".join(
+            f'<div class="lesson" data-domain="rm" style="border-left-color:{gcolor}">'
+            f'<h3>{esc(title)}</h3><p class="concept">{esc(desc)}</p>'
+            f'<div class="where"><span>📍 去哪补</span>{esc(where)}</div></div>'
+            for title, desc, where in items)
+        rm_groups.append(
+            f'<h2 class="rm-group" id="{gid}" style="border-left:5px solid {gcolor}">{esc(gtitle)}</h2>'
+            f'<div class="cards">{rm_cards}</div>')
+    nav.append('<div class="nav-domain" data-domain="rm">'
+               '<div class="nav-domain-head"><span class="dot" style="background:#14b8a6"></span>'
+               '进阶路线图<span class="arrow">▶</span></div>'
+               f'<div class="nav-sub">{"".join(rm_subs)}</div></div>')
+    content.append(
+        '<section class="domain" id="roadmap">'
+        '<div class="banner" style="background:linear-gradient(135deg,#334155 0%,#0f766e 100%)">'
+        '进阶路线图 · Agent 补强（不限于 LangChain）</div>'
+        '<p class="rm-intro">把当前课程往「能搭生产级 Agent」方向延伸的知识地图。这些<strong>不是本仓库的 .py 课</strong>'
+        '——有的在本项目后续补强、有的属于姊妹项目 LangGraph、有的是跨框架的通用能力。第一遍可只读不练，'
+        '按「A 机制 → 评估加厚 → LangGraph → MCP / 上下文」的顺序逐步补。</p>'
+        f'{"".join(rm_groups)}</section>')
+
+    meta = f"{len(DOMAINS)} 概念域 · {sum(len(d[3]) for d in DOMAINS)} 课 · 进阶路线图 · 暗色护眼"
     return (TEMPLATE.replace("{{NAV}}","".join(nav))
                     .replace("{{CONTENT}}","".join(content))
                     .replace("{{META}}", meta))
@@ -291,6 +360,16 @@ pre code { font-family: inherit; }
 .rule { margin-top: 14px; background: #2c2410; border-left: 4px solid var(--orange);
         padding: 12px 16px; border-radius: 8px; line-height: 1.8; color: #f0e6d2; font-size: 16px; }
 .rule span { display: block; font-weight: 700; color: #fbbf24; margin-bottom: 4px; font-size: 14px; }
+
+/* ── 进阶路线图 ── */
+.rm-intro { max-width: 980px; color: var(--text-sub); margin: 10px 40px 6px;
+            font-size: 16px; line-height: 1.85; }
+.rm-intro strong { color: #e6edf5; }
+.rm-group { max-width: 980px; color: #cbd5e1; font-size: 19px; font-weight: 700;
+            margin: 28px 40px 2px; padding-left: 12px; }
+.where { margin-top: 14px; background: #0d2826; border-left: 4px solid #14b8a6;
+         padding: 10px 16px; border-radius: 8px; line-height: 1.8; color: #cdeee9; font-size: 15.5px; }
+.where span { display: block; font-weight: 700; color: #5eead4; margin-bottom: 3px; font-size: 13px; }
 
 /* ── 回到顶部 ── */
 #back-top { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px;
