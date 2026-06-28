@@ -69,6 +69,9 @@ LangChain 的心智模型是「**一条由组件拼成的流水线**」：`Promp
   02_tool_loop.py          手动执行 tool_calls，用 ToolMessage 回灌结果
   03_create_agent.py       create_agent 一行建 ReAct Agent
   04_multi_tool_agent.py   多工具协作（搜索 + 查库的电商例子）
+  05_reflection_agent.py   反思：生成者⇄评审者循环，自我批评再重写        〔进阶〕
+  06_router_agent.py       路由：用 LLM 分类后分发到不同专家链           〔进阶〕
+  07_mcp_tools.py          MCP：接入外部标准协议的工具（含最小 server）  〔进阶〕
 
 07_检索增强RAG/
   01_embeddings.py         文本向量化 + 余弦相似度直观演示
@@ -139,3 +142,9 @@ python "course_v2/04_LCEL与Runnable/01_pipe_chain.py"
 ```
 
 > 标〔进阶〕的文件第一遍可跳过。RAG 域的 `02` 会先建好本地 `faiss_index/`，后面几课复用它，建议按序号跑。
+
+> ⚠️ **Windows 用户**：默认控制台是 GBK 编码，模型输出里一旦带 emoji（如 ✅）就会 `UnicodeEncodeError` 崩掉（任何课都可能遇到，不是某节课的 bug）。运行前设一次环境变量即可：
+> ```powershell
+> $env:PYTHONIOENCODING='utf-8'   # PowerShell；想一劳永逸可加进 .venv 激活脚本
+> ```
+> 顺带把控制台代码页切到 UTF-8（`chcp 65001`）还能让中文正常显示、不再乱码。
