@@ -18,5 +18,5 @@ pypdf==6.13.2
 
 # 07_检索增强RAG/03_document_loaders.py 加载 .docx 用到（当前 .venv 可能未装，新机一并装上）
 docx2txt
-# 07_检索增强RAG/03_document_loaders.py 加载 .md/.html 等非结构化格式用到（可选）
-unstructured
+# 07_检索增强RAG/03_document_loaders.py 加载 .md/.html 等非结构化格式用到（可选，需要 cmake 才能编译 llvmlite，暂时跳过）
+# unstructured
