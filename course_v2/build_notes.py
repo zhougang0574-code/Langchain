@@ -59,7 +59,7 @@ DOMAINS = [
     'class Review(TypedDict):\n    rating: Annotated[float, "评分0-10"]\nllm.with_structured_output(Review)'),
    ("l0306","06 OutputFixingParser〔进阶〕","给解析器套自动修复：第一次失败不报错，让 LLM 把脏输出改成合法格式再解析。",
     "治「格式手抖」不治「内容编造」；能用 with_structured_output 从源头少出错时优先，仍可能出脏数据再加它兜底。",
-    'base = PydanticOutputParser(pydantic_object=Actor)\nfix = OutputFixingParser.from_llm(parser=base, llm=llm)\nfix.invoke(脏输出)  # 失败→LLM修→重解析'),
+    'base = PydanticOutputParser(pydantic_object=Actor)\nfix = OutputFixingParser.from_llm(parser=base, llm=llm)\nfix.invoke(脏输出)  # 失败→LLM修→重解析\n# 💡 llmB（修复模型）接收：脏输出原文+期望格式规范+修复指令，可考虑用小模型降低成本'),
  ]),
  ("d04","04 LCEL 与 Runnable","#10b981",[
    ("l0401","01 管道 |","a | b 把组件串成 RunnableSequence；prompt|model|parser 是最经典的链。",
